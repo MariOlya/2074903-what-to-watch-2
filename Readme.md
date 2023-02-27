@@ -1,3 +1,17 @@
+<p align="center">
+          <a>
+            <span>W</span>
+            <span>T</span>
+            <span>W</span>
+          </a>
+    <h1 align="center">What To Watch</h1>
+    <h3 align="center">study project by Olga Marinina</h3>
+<br>
+</p>
+
+* Student: [Olga Marinina](https://up.htmlacademy.ru/yii/4/user/2074903).
+* Mentor: [Mikhail Selyatin](https://htmlacademy.ru/profile/id919955).
+
 # Руководство по работе с проектом
 
 Данный проект создан с помощью [Create React App](https://github.com/facebook/create-react-app).
