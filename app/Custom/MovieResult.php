@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\App;
 
 class MovieResult
 {
-    protected OmdbMovieRepository $movieRepository;
+    protected MovieInfoRepository $movieRepository;
 
-    public function __construct(OmdbMovieRepository $movieRepository)
+    public function __construct(MovieInfoRepository $movieRepository)
     {
         $this->movieRepository = $movieRepository;
     }
 
     public function getMovieInfo(string $keyword) : array
     {
-        return $this->movieRepository->fetch($keyword);
+        return $this->movieRepository->getMovieInfoById($keyword);
     }
 }

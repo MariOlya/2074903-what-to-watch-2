@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Custom;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 
-class OmdbMovieByIdRepository implements OmdbMovieRepository
+class OmdbMovieInfoRepository implements MovieInfoRepository, ApiHandlerInterface
 {
     protected string $host = 'https://www.omdbapi.com';
     protected ClientInterface $client;
@@ -26,20 +25,21 @@ class OmdbMovieByIdRepository implements OmdbMovieRepository
 
     /**
      */
-    public function fetch(string $keyword): array
+    public function fetch(string $requiredKeyword = null): string|array
     {
-        if (!isset($keyword)) {
+        if (!isset($requiredKeyword)) {
             return $this->output('400', 'Missing required fields');
         }
 
-        $parameters[$this->type] = $keyword;
-//        $uri = $this->host . '/?' . http_build_query($parameters) . '&apikey=' . $this->apiKey;
-        $uri = $this->host . '/?apikey=' . $this->apiKey . '&' . http_build_query($parameters);
-        return $this->get($uri);
+        $parameters[$this->type] = $requiredKeyword;
+
+        return $this->host . '/?apikey=' . $this->apiKey . '&' . http_build_query($parameters);
     }
 
-    public function get(string $uri) : array
+    public function getMovieInfoById(string $id) : array
     {
+        $uri = $this->fetch($id);
+
         try {
             $response = $this->client->get($uri);
 
@@ -61,7 +61,7 @@ class OmdbMovieByIdRepository implements OmdbMovieRepository
         return $this->output($code, $message, $data);
     }
 
-    public function output($code, $message, $data = null) : array
+    private function output($code, $message, $data = null) : array
     {
         return [
             'code'    => $code,
