@@ -1,16 +1,26 @@
 <p align="center">
-          <a>
-            <span>W</span>
-            <span>T</span>
-            <span>W</span>
-          </a>
-    <h1 align="center">What To Watch</h1>
-    <h3 align="center">study project by Olga Marinina</h3>
-<br>
+              <a>
+                <span>W</span>
+                <span>T</span>
+                <span>W</span>
+              </a>
+        <h1 align="center">What To Watch</h1>
+        <h3 align="center">study project by Olga Marinina</h3>
+        <br>
 </p>
 
 * Student: [Olga Marinina](https://up.htmlacademy.ru/yii/4/user/2074903).
 * Mentor: [Mikhail Selyatin](https://htmlacademy.ru/profile/id919955).
+
+### About project
+
+"What to watch" is a new generation online cinema.
+Watch the latest movies or series episodes absolutely free and in the best quality.
+Leave reviews, rate and choose only the best from the world of big cinema.
+
+### API specification
+
+Check it [here](https://10.react.pages.academy/wtw/spec#get-/films).
 
 ### Getting started
 
