@@ -12,8 +12,8 @@ class UnprocessableResponse extends BaseFailResponse
         ?string $message = 'This action has already been done earlier',
     ) {
         parent::__construct(
-            codeResponse: $codeResponse,
-            message: $message
+            message: $message,
+            codeResponse: $codeResponse
         );
     }
 }

@@ -13,8 +13,8 @@ class BadRequestResponse extends BaseFailResponse
         ?string $message = 'The page is does not exist',
     ) {
         parent::__construct(
-            codeResponse: $codeResponse,
-            message: $message
+            message: $message,
+            codeResponse: $codeResponse
         );
     }
 }

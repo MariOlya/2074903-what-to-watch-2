@@ -13,8 +13,8 @@ class UnauthorizedResponse extends BaseFailResponse
         ?string $message = 'You are not logged in or you do not have permission to this page',
     ) {
         parent::__construct(
-            codeResponse: $codeResponse,
-            message: $message
+            message: $message,
+            codeResponse: $codeResponse
         );
     }
 }

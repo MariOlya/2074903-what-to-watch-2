@@ -13,8 +13,8 @@ class NotFoundResponse extends BaseFailResponse
         ?string $message = 'This page is not found',
     ) {
         parent::__construct(
-            codeResponse: $codeResponse,
-            message: $message
+            message: $message,
+            codeResponse: $codeResponse
         );
     }
 }
