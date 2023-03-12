@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\BadRequestResponse;
+use App\Http\Responses\BaseResponse;
+use App\Http\Responses\NoContentResponse;
+use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticationController extends Controller
 {
-    public function login(): Response
+    public function login(): BaseResponse
     {
-        //
-        return new JsonResponse();
+        try {
+            //
+            return new SuccessResponse();
+        } catch (\Throwable) {
+            return new BadRequestResponse();
+        }
     }
 
-    public function logout(): Response
+    public function logout(): BaseResponse
     {
         //
-        return new JsonResponse();
+        return new NoContentResponse();
     }
 }

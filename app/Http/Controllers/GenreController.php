@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\BaseResponse;
+use App\Http\Responses\SuccessResponse;
+use App\Http\Responses\UnauthorizedResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class GenreController extends Controller
 {
-    public function getGenres(): Response
+    public function getGenres(): BaseResponse
     {
         //
-        return new JsonResponse();
+        return new SuccessResponse();
     }
 
-    public function updateGenre(int $genreId): Response
+    public function updateGenre(int $genreId): BaseResponse
     {
-        //
-        return new JsonResponse();
+        //there will be check that the user tried to do this is logged and moderator, but we set now 'mock'
+        try {
+            return new SuccessResponse();
+        } catch (\Throwable) {
+            return new UnauthorizedResponse();
+        }
     }
 }
