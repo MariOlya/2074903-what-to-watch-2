@@ -8,6 +8,6 @@ class BaseFailResponse extends BaseResponse
 {
     protected function makeResponseData(): array
     {
-        return ['error' => $this->message];
+        return ['message' => $this->message];
     }
 }
