@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
-    public function addNewReview(int $filmId): BaseResponse
+    public function addNewReview(Request $request, int $filmId): BaseResponse
     {
         //there will be check of this film, but we set now 'mock'
         if (!$filmId) {
@@ -28,7 +28,7 @@ class ReviewController extends Controller
         return new SuccessResponse();
     }
 
-    public function updateReview(int $reviewId): BaseResponse
+    public function updateReview(Request $request, int $reviewId): BaseResponse
     {
         //there will be check of this review, but we set now 'mock'
         if (!$reviewId) {

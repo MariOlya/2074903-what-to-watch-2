@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
-    public function register(): BaseResponse
+    public function register(Request $request): BaseResponse
     {
         //
         return new SuccessResponse();
@@ -29,7 +29,7 @@ class UserController extends Controller
         }
     }
 
-    public function updateUser(): BaseResponse
+    public function updateUser(Request $request): BaseResponse
     {
         //there will be check that the user tried to do this is logged, but we set now 'mock'
         try {

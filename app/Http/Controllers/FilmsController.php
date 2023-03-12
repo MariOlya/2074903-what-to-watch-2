@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class FilmsController extends Controller
 {
-    public function getFilms(): BaseResponse
+    public function getFilms(Request $request): BaseResponse
     {
         //
         return new SuccessResponse();

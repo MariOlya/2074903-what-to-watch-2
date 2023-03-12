@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class AuthenticationController extends Controller
 {
-    public function login(): BaseResponse
+    public function login(Request $request): BaseResponse
     {
         try {
             //
@@ -22,7 +22,7 @@ class AuthenticationController extends Controller
         }
     }
 
-    public function logout(): BaseResponse
+    public function logout(Request $request): BaseResponse
     {
         //
         return new NoContentResponse();

@@ -17,7 +17,7 @@ class GenreController extends Controller
         return new SuccessResponse();
     }
 
-    public function updateGenre(int $genreId): BaseResponse
+    public function updateGenre(Request $request, int $genreId): BaseResponse
     {
         //there will be check that the user tried to do this is logged and moderator, but we set now 'mock'
         try {

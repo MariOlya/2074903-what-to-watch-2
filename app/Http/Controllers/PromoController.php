@@ -18,7 +18,7 @@ class PromoController extends Controller
         return new SuccessResponse();
     }
 
-    public function setPromoFilm(int $filmId): BaseResponse
+    public function setPromoFilm(Request $request, int $filmId): BaseResponse
     {
         //there will be check of this film, but we set now 'mock'
         if (!$filmId) {

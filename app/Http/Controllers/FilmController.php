@@ -22,7 +22,7 @@ class FilmController extends Controller
         return new SuccessResponse();
     }
 
-    public function addFavoriteFilm(int $filmId): BaseResponse
+    public function addFavoriteFilm(Request $request, int $filmId): BaseResponse
     {
         //there will be check of this film, but we set now 'mock'
         if (!$filmId) {
@@ -62,7 +62,7 @@ class FilmController extends Controller
         return new SuccessResponse();
     }
 
-    public function addNewFilm(): BaseResponse
+    public function addNewFilm(Request $request): BaseResponse
     {
         //there will be check that the new id is not in db already, but we set now 'mock'
         try {
@@ -72,7 +72,7 @@ class FilmController extends Controller
         }
     }
 
-    public function updateFilm(int $filmId): BaseResponse
+    public function updateFilm(Request $request, int $filmId): BaseResponse
     {
         //there will be check of this film, but we set now 'mock'
         if (!$filmId) {
