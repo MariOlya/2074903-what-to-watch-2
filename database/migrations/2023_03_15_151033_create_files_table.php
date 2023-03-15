@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('files', function (Blueprint $table) {
             $table->id();
             $table->text('link');
-            $table->foreignIdFor(\App\Models\FileType::class)->constrained();
+            $table->foreignIdFor(\App\Models\FileType::class)->constrained()->cascadeOnDelete();
         });
     }
 
