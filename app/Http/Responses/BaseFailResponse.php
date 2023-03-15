@@ -19,6 +19,7 @@ class BaseFailResponse extends BaseResponse
             message: $exception?->getMessage() ?? $message
         );
     }
+
     protected function makeResponseData(): array
     {
         return ['message' => $this->message];
