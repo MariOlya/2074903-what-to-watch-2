@@ -6,8 +6,13 @@
               </a>
         <h1 align="center">What To Watch</h1>
         <h3 align="center">study project by Olga Marinina</h3>
-        <br>
+<img src="https://img.shields.io/badge/php-%5E8.1-blue">
+<img src="https://img.shields.io/badge/laravel-%5E10.0-red">
+<img src="https://img.shields.io/badge/mysql-8.0-orange">
+<br>
+<br>
 </p>
+
 
 * Student: [Olga Marinina](https://up.htmlacademy.ru/yii/4/user/2074903).
 * Mentor: [Mikhail Selyatin](https://htmlacademy.ru/profile/id919955).
