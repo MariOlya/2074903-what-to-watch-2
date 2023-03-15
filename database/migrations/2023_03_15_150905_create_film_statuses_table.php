@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('film_statuses', function (Blueprint $table) {
-            $table->id()->primary();
-            $table->string('genre');
+            $table->id();
+            $table->string('status', 20);
         });
     }
 

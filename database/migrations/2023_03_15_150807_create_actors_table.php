@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('actors', function (Blueprint $table) {
-            $table->id()->primary();
-            $table->string('name');
+            $table->id();
+            $table->string('name', 100);
         });
     }
 

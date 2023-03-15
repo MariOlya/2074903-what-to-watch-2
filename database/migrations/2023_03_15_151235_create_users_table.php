@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id()->primary();
+            $table->id();
             $table->timestamp('created_at')->useCurrent();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->char('password');
-            $table->foreignIdFor(\App\Models\File::class, 'avatar_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->string('name', 100);
+            $table->string('email', 50);
+            $table->unique('email');
+            $table->char('password', 255);
+            $table->foreignIdFor(\App\Models\File::class, 'avatar_id')->nullable()->constrained('files')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\UserRole::class)->constrained()->cascadeOnDelete();
         });
     }

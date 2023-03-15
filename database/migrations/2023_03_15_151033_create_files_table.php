@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('files', function (Blueprint $table) {
-            $table->id()->primary();
+            $table->id();
             $table->text('link');
             $table->foreignIdFor(\App\Models\FileType::class)->constrained();
         });

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('film_genre', function (Blueprint $table) {
-            $table->id()->primary();
+            $table->id();
             $table->foreignIdFor(\App\Models\Film::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Genre::class)->constrained()->cascadeOnDelete();
         });
