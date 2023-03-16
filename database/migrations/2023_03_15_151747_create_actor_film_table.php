@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(\App\Models\Actor::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Film::class)->constrained()->cascadeOnDelete();
+            $table->unique(['actor_id', 'film_id']);
         });
     }
 

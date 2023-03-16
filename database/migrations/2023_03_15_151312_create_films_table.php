@@ -16,8 +16,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();
-            $table->string('imdb_id', 20);
-            $table->unique('imdb_id');
+            $table->string('imdb_id', 20)->unique();
             $table->foreignIdFor(\App\Models\File::class, 'poster_image_id')->nullable()->constrained('files')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\File::class, 'preview_image_id')->nullable()->constrained('files')->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\File::class, 'background_image_id')->nullable()->constrained('files')->cascadeOnDelete();
