@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\FileType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class FileTypeFactory extends Factory
 {
+    protected $model = FileType::class;
+
     /**
      * Define the model's default state.
      *
@@ -16,8 +19,15 @@ class FileTypeFactory extends Factory
      */
     public function definition(): array
     {
+        $fileTypes = [
+            'avatar',
+            'poster',
+            'preview',
+            'background'
+        ];
+
         return [
-            //
+            'type' => $this->faker->unique()->randomElement($fileTypes),
         ];
     }
 }

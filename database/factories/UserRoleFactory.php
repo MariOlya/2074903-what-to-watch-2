@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class UserRoleFactory extends Factory
 {
+    protected $model = UserRole::class;
+
     /**
      * Define the model's default state.
      *
@@ -16,8 +19,14 @@ class UserRoleFactory extends Factory
      */
     public function definition(): array
     {
+        $roles = [
+            'usual',
+            'moderator',
+            'admin'
+        ];
+
         return [
-            //
+            'role' => $this->faker->unique()->randomElement($roles),
         ];
     }
 }

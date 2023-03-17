@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\FilmStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class FilmStatusFactory extends Factory
 {
+    protected $model = FilmStatus::class;
+
     /**
      * Define the model's default state.
      *
@@ -16,8 +19,14 @@ class FilmStatusFactory extends Factory
      */
     public function definition(): array
     {
+        $filmStatuses = [
+            'pending',
+            'moderate',
+            'ready'
+        ];
+
         return [
-            //
+            'status' => $this->faker->unique()->randomElement($filmStatuses),
         ];
     }
 }

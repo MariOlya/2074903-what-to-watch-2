@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\LinkType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class LinkTypeFactory extends Factory
 {
+    protected $model = LinkType::class;
+
     /**
      * Define the model's default state.
      *
@@ -16,8 +19,13 @@ class LinkTypeFactory extends Factory
      */
     public function definition(): array
     {
+        $linkTypes = [
+            'video',
+            'preview'
+        ];
+
         return [
-            //
+            'type' => $this->faker->unique()->randomElement($linkTypes),
         ];
     }
 }
