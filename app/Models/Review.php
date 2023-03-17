@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Review extends Model
 {
+    protected $with = ['user', 'film'];
+
     use HasFactory;
 
     public function user(): HasOne

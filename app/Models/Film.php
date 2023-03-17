@@ -10,6 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Film extends Model
 {
+    protected $with = [
+        'posterImage',
+        'previewImage',
+        'backgroundImage',
+        'backgroundColor',
+        'videoLink',
+        'previewVideoLink',
+        'director',
+        'status',
+        'actors',
+        'genres'
+    ];
+
     use HasFactory;
 
     public function posterImage(): HasOne

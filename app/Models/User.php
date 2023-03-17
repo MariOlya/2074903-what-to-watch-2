@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Model
 {
+    protected $with = ['avatar', 'role'];
+
     use HasFactory;
 
     public function avatar() : HasOne

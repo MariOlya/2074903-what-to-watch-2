@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Comment extends Model
 {
+    protected $with = ['user', 'review'];
+
     use HasFactory;
 
     public function user(): HasOne
