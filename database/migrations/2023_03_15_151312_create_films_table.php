@@ -17,20 +17,20 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();
             $table->string('imdb_id', 20)->unique();
-            $table->foreignIdFor(\App\Models\File::class, 'poster_image_id')->nullable()->constrained('files')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\File::class, 'preview_image_id')->nullable()->constrained('files')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\File::class, 'background_image_id')->nullable()->constrained('files')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Color::class, 'background_color_id')->nullable()->constrained('colors')->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\File::class, 'poster_image_id')->nullable()->constrained('files');
+            $table->foreignIdFor(\App\Models\File::class, 'preview_image_id')->nullable()->constrained('files');
+            $table->foreignIdFor(\App\Models\File::class, 'background_image_id')->nullable()->constrained('files');
+            $table->foreignIdFor(\App\Models\Color::class, 'background_color_id')->nullable()->constrained('colors');
             $table->string('name', 255)->nullable();
             $table->integer('released')->nullable();
             $table->text('description')->nullable();
-            $table->foreignIdFor(\App\Models\Director::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Director::class)->nullable()->constrained();
             $table->integer('run_time')->nullable();
-            $table->foreignIdFor(\App\Models\Link::class, 'video_link_id')->nullable()->constrained('links')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Link::class, 'preview_video_link_id')->nullable()->constrained('links')->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Link::class, 'video_link_id')->nullable()->constrained('links');
+            $table->foreignIdFor(\App\Models\Link::class, 'preview_video_link_id')->nullable()->constrained('links');
             $table->float('rating')->nullable();
             $table->integer('vote_amount')->nullable();
-            $table->foreignIdFor(\App\Models\FilmStatus::class, 'status_id')->constrained('film_statuses')->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\FilmStatus::class, 'status_id')->constrained('film_statuses');
             $table->boolean('promo')->default(false);
         });
     }

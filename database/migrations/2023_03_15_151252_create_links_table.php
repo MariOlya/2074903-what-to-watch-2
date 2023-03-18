@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('links', function (Blueprint $table) {
             $table->id();
             $table->text('link');
-            $table->foreignIdFor(\App\Models\LinkType::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\LinkType::class)->constrained();
         });
     }
 
