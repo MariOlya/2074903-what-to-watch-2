@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Actor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ActorFactory extends Factory
 {
+    protected $model = Actor::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,7 @@ class ActorFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->unique()->name,
         ];
     }
 }

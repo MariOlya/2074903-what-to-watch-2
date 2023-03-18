@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Color;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ColorFactory extends Factory
 {
+    protected $model = Color::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,7 @@ class ColorFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'color' => $this->faker->unique()->hexColor,
         ];
     }
 }
