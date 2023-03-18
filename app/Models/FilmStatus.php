@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FilmStatus extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function films(): BelongsTo

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Link extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function type(): HasOne

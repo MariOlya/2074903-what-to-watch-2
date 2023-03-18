@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserRole extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function users(): BelongsTo

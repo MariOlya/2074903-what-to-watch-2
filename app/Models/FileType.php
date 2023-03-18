@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FileType extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function files(): BelongsTo

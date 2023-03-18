@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Color extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function withBackgroundColorFilms(): BelongsTo

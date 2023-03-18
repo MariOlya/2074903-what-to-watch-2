@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Actor extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function films(): BelongsToMany

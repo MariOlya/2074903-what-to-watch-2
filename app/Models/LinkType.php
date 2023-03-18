@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LinkType extends Model
 {
+    public $timestamps = false;
+
     use HasFactory;
 
     public function links(): BelongsTo

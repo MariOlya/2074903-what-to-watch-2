@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Model
 {
+    public $timestamps = false;
+
     protected $with = ['avatar', 'role'];
 
     use HasFactory;
