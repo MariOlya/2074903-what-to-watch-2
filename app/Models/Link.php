@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Link extends Model
 {
@@ -13,18 +13,18 @@ class Link extends Model
 
     use HasFactory;
 
-    public function type(): HasOne
+    public function type(): BelongsTo
     {
-        return $this->hasOne(LinkType::class);
+        return $this->belongsTo(LinkType::class);
     }
 
-    public function withVideoLinkFilms(): BelongsTo
+    public function withVideoLinkFilms(): HasMany
     {
-        return $this->belongsTo(Film::class, 'video_link_id')->withDefault();
+        return $this->hasMany(Film::class, 'video_link_id');
     }
 
-    public function withPreviewVideoLinkFilms(): BelongsTo
+    public function withPreviewVideoLinkFilms(): HasMany
     {
-        return $this->belongsTo(Film::class, 'preview_video_link_id')->withDefault();
+        return $this->hasMany(Film::class, 'preview_video_link_id');
     }
 }

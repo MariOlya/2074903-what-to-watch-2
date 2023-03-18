@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LinkType extends Model
 {
@@ -12,8 +12,8 @@ class LinkType extends Model
 
     use HasFactory;
 
-    public function links(): BelongsTo
+    public function links(): HasMany
     {
-        return $this->belongsTo(Link::class);
+        return $this->hasMany(Link::class);
     }
 }

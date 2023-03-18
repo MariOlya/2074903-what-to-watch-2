@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FileType extends Model
 {
@@ -12,9 +12,9 @@ class FileType extends Model
 
     use HasFactory;
 
-    public function files(): BelongsTo
+    public function files(): HasMany
     {
-        return $this->belongsTo(File::class);
+        return $this->hasMany(File::class);
     }
 
 }

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Review extends Model
@@ -15,18 +15,18 @@ class Review extends Model
     use HasFactory;
     use SoftDeletes;
 
-    public function user(): HasOne
+    public function user(): BelongsTo
     {
-        return $this->hasOne(User::class)->withDefault();
+        return $this->belongsTo(User::class)->withDefault();
     }
 
-    public function film(): HasOne
+    public function film(): BelongsTo
     {
-        return $this->hasOne(Film::class);
+        return $this->belongsTo(Film::class);
     }
 
-    public function comments(): BelongsTo
+    public function comments(): HasMany
     {
-        return $this->belongsTo(Comment::class)->withDefault();
+        return $this->hasMany(Comment::class);
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Model
 {
@@ -16,24 +16,24 @@ class User extends Model
 
     use HasFactory;
 
-    public function avatar() : HasOne
+    public function avatar(): BelongsTo
     {
-        return $this->hasOne(File::class, 'avatar_id')->withDefault();
+        return $this->belongsTo(File::class, 'avatar_id')->withDefault();
     }
 
-    public function role() : HasOne
+    public function role(): BelongsTo
     {
-        return $this->hasOne(UserRole::class);
+        return $this->belongsTo(UserRole::class);
     }
 
-    public function reviews(): BelongsTo
+    public function reviews(): HasMany
     {
-        return $this->belongsTo(Review::class)->withDefault();
+        return $this->hasMany(Review::class);
     }
 
-    public function comments(): BelongsTo
+    public function comments(): HasMany
     {
-        return $this->belongsTo(Comment::class)->withDefault();
+        return $this->hasMany(Comment::class);
     }
 
     public function favoriteFilms(): BelongsToMany

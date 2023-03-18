@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class File extends Model
 {
@@ -13,40 +13,40 @@ class File extends Model
 
     use HasFactory;
 
-    public function type(): HasOne
+    public function type(): BelongsTo
     {
-        return $this->hasOne(FileType::class);
+        return $this->belongsTo(FileType::class);
     }
 
     /** Just for file type 'avatar'
      * Potentially we should extend this method with 'where'
      */
-    public function withAvatarUsers(): BelongsTo
+    public function withAvatarUsers(): HasMany
     {
-        return $this->belongsTo(User::class, 'avatar_id')->withDefault();
+        return $this->hasMany(User::class, 'avatar_id');
     }
 
     /** Just for file type 'poster'
      * Potentially we should extend this method with 'where'
      */
-    public function withPosterFilms(): BelongsTo
+    public function withPosterFilms(): HasMany
     {
-        return $this->belongsTo(Film::class, 'poster_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'poster_image_id')->withDefault();
     }
 
     /** Just for file type 'preview'
      * Potentially we should extend this method with 'where'
      */
-    public function withPreviewFilms(): BelongsTo
+    public function withPreviewFilms(): HasMany
     {
-        return $this->belongsTo(Film::class, 'preview_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'preview_image_id')->withDefault();
     }
 
     /** Just for file type 'background'
      * Potentially we should extend this method with 'where'
      */
-    public function withBackgroundFilms(): BelongsTo
+    public function withBackgroundFilms(): HasMany
     {
-        return $this->belongsTo(Film::class, 'background_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'background_image_id')->withDefault();
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Film extends Model
@@ -27,49 +27,49 @@ class Film extends Model
     use HasFactory;
     use SoftDeletes;
 
-    public function posterImage(): HasOne
+    public function posterImage(): BelongsTo
     {
-        return $this->hasOne(File::class, 'poster_image_id')->withDefault();
+        return $this->belongsTo(File::class, 'poster_image_id')->withDefault();
     }
 
-    public function previewImage(): HasOne
+    public function previewImage(): BelongsTo
     {
-        return $this->hasOne(File::class, 'preview_image_id')->withDefault();
+        return $this->belongsTo(File::class, 'preview_image_id')->withDefault();
     }
 
-    public function backgroundImage(): HasOne
+    public function backgroundImage(): BelongsTo
     {
-        return $this->hasOne(File::class, 'background_image_id')->withDefault();
+        return $this->belongsTo(File::class, 'background_image_id')->withDefault();
     }
 
-    public function backgroundColor(): HasOne
+    public function backgroundColor(): BelongsTo
     {
-        return $this->hasOne(Color::class, 'background_color_id')->withDefault();
+        return $this->belongsTo(Color::class, 'background_color_id')->withDefault();
     }
 
-    public function videoLink(): HasOne
+    public function videoLink(): BelongsTo
     {
-        return $this->hasOne(Link::class, 'video_link_id')->withDefault();
+        return $this->belongsTo(Link::class, 'video_link_id')->withDefault();
     }
 
-    public function previewVideoLink(): HasOne
+    public function previewVideoLink(): BelongsTo
     {
-        return $this->hasOne(Link::class, 'preview_video_link_id')->withDefault();
+        return $this->belongsTo(Link::class, 'preview_video_link_id')->withDefault();
     }
 
-    public function director(): HasOne
+    public function director(): BelongsTo
     {
-        return $this->hasOne(Director::class)->withDefault();
+        return $this->belongsTo(Director::class)->withDefault();
     }
 
-    public function status(): HasOne
+    public function status(): BelongsTo
     {
-        return $this->hasOne(FilmStatus::class, 'status_id');
+        return $this->belongsTo(FilmStatus::class, 'status_id');
     }
 
-    public function reviews(): BelongsTo
+    public function reviews(): HasMany
     {
-        return $this->belongsTo(Review::class)->withDefault();
+        return $this->hasMany(Review::class)->withDefault();
     }
 
     public function actors(): BelongsToMany
