@@ -27,9 +27,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class File extends Model
 {
-    public $timestamps = false;
-
     use HasFactory;
+
+    public $timestamps = false;
 
     public function type(): BelongsTo
     {
@@ -49,7 +49,7 @@ class File extends Model
      */
     public function withPosterFilms(): HasMany
     {
-        return $this->hasMany(Film::class, 'poster_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'poster_image_id');
     }
 
     /** Just for file type 'preview'
@@ -57,7 +57,7 @@ class File extends Model
      */
     public function withPreviewFilms(): HasMany
     {
-        return $this->hasMany(Film::class, 'preview_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'preview_image_id');
     }
 
     /** Just for file type 'background'
@@ -65,6 +65,6 @@ class File extends Model
      */
     public function withBackgroundFilms(): HasMany
     {
-        return $this->hasMany(Film::class, 'background_image_id')->withDefault();
+        return $this->hasMany(Film::class, 'background_image_id');
     }
 }

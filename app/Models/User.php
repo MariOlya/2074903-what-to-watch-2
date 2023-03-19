@@ -41,11 +41,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class User extends Model
 {
+    use HasFactory;
+
     public $timestamps = false;
 
     protected $with = ['avatar', 'role'];
-
-    use HasFactory;
 
     public function avatar(): BelongsTo
     {

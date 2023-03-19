@@ -23,9 +23,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Genre extends Model
 {
-    public $timestamps = false;
-
     use HasFactory;
+
+    public $timestamps = false;
 
     public function films(): BelongsToMany
     {

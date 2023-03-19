@@ -42,10 +42,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Review extends Model
 {
-    protected $with = ['user', 'film'];
-
     use HasFactory;
     use SoftDeletes;
+
+    protected $with = ['user', 'film'];
 
     public function user(): BelongsTo
     {

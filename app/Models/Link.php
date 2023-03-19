@@ -29,9 +29,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Link extends Model
 {
-    public $timestamps = false;
-
     use HasFactory;
+
+    public $timestamps = false;
 
     public function type(): BelongsTo
     {

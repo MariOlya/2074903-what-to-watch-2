@@ -23,9 +23,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class FilmStatus extends Model
 {
-    public $timestamps = false;
-
     use HasFactory;
+
+    public $timestamps = false;
 
     public function films(): HasMany
     {

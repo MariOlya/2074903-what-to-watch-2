@@ -77,6 +77,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Film extends Model
 {
+    use HasFactory;
+    use SoftDeletes;
+
     protected $with = [
         'posterImage',
         'previewImage',
@@ -89,9 +92,6 @@ class Film extends Model
         'actors',
         'genres'
     ];
-
-    use HasFactory;
-    use SoftDeletes;
 
     public function posterImage(): BelongsTo
     {

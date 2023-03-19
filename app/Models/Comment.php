@@ -37,10 +37,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Comment extends Model
 {
-    protected $with = ['user', 'review'];
-
     use HasFactory;
     use SoftDeletes;
+
+    protected $with = ['user', 'review'];
 
     public function user(): BelongsTo
     {
