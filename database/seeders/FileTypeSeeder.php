@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\FileType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class FileTypeSeeder extends Seeder
 {
@@ -13,6 +13,17 @@ class FileTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        FileType::factory()->count(4)->create();
+        $fileTypes = [
+            'avatar',
+            'poster',
+            'preview',
+            'background'
+        ];
+
+        foreach ($fileTypes as $fileType) {
+            DB::table('file_types')->insert([
+                'type' => $fileType
+            ]);
+        }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\LinkType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class LinkTypeSeeder extends Seeder
 {
@@ -13,6 +13,15 @@ class LinkTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        LinkType::factory()->count(2)->create();
+        $linkTypes = [
+            'video',
+            'preview'
+        ];
+
+        foreach ($linkTypes as $linkType) {
+            DB::table('link_types')->insert([
+                'type' => $linkType
+            ]);
+        }
     }
 }
