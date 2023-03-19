@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $type
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Link> $links
  * @property-read int|null $links_count
- * @method static \Database\Factories\LinkTypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|LinkType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LinkType newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LinkType query()

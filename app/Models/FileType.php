@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $type
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
  * @property-read int|null $files_count
- * @method static \Database\Factories\FileTypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|FileType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileType newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileType query()

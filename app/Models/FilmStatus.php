@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $status
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Film> $films
  * @property-read int|null $films_count
- * @method static \Database\Factories\FilmStatusFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|FilmStatus newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FilmStatus newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FilmStatus query()
