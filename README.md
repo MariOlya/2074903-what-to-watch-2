@@ -6,13 +6,12 @@
               </a>
         <h1 align="center">What To Watch</h1>
         <h3 align="center">study project by Olga Marinina</h3>
+</p>
+
+<p align="center">
 <img src="https://img.shields.io/badge/php-%5E8.1-blue">
 <img src="https://img.shields.io/badge/laravel-%5E10.0-red">
 <img src="https://img.shields.io/badge/mysql-8.0-orange">
-<br>
-<br>
-</p>
-
 
 * Student: [Olga Marinina](https://up.htmlacademy.ru/yii/4/user/2074903).
 * Mentor: [Mikhail Selyatin](https://htmlacademy.ru/profile/id919955).
@@ -40,4 +39,32 @@ alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
 And now you can do the first command with: 
 ```
 sail up
+```
+
+### Migrations
+
+All db migrations were prepared, so just run:
+
+```
+sail artisan migrate
+```
+
+### Data
+
+#### 1. Strict data
+
+In this project we have default set data for file type, film status, user role, link type.
+So these data will be needed for you any way. To upload these to DB just run:
+
+```
+sail artisan db:seed
+```
+
+#### 2. Fake data
+
+To test smth and check website operation you should add fake data.
+They were prepared too, soo just run:
+
+```
+sail artisan db:seed --class=FakeDataSeeder
 ```

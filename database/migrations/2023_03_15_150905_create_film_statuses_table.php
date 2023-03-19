@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('film_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('status', 20);
+            $table->string('status', 20)->unique();
         });
     }
 

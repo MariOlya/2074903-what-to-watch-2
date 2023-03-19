@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->timestamp('created_at')->useCurrent();
             $table->string('name', 100);
-            $table->string('email', 50);
-            $table->unique('email');
+            $table->string('email', 50)->unique();
             $table->char('password', 255);
-            $table->foreignIdFor(\App\Models\File::class, 'avatar_id')->nullable()->constrained('files')->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\UserRole::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\File::class, 'avatar_id')->nullable()->constrained('files');
+            $table->foreignIdFor(\App\Models\UserRole::class)->constrained();
         });
     }
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
             $table->softDeletes();
-            $table->foreignIdFor(\App\Models\User::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\User::class)->nullable()->constrained();
             $table->foreignIdFor(\App\Models\Film::class)->constrained()->cascadeOnDelete();
             $table->text('text');
             $table->integer('rating');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Symfony\Component\HttpFoundation\Response;
+
 class UnprocessableResponse extends BaseFailResponse
 {
     public function __construct(
