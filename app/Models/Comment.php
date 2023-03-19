@@ -40,8 +40,6 @@ class Comment extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $with = ['user', 'review'];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

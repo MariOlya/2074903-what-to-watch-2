@@ -45,8 +45,6 @@ class Review extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $with = ['user', 'film'];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withDefault();

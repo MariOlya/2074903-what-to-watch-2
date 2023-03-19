@@ -80,19 +80,6 @@ class Film extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $with = [
-        'posterImage',
-        'previewImage',
-        'backgroundImage',
-        'backgroundColor',
-        'videoLink',
-        'previewVideoLink',
-        'director',
-        'status',
-        'actors',
-        'genres'
-    ];
-
     public function posterImage(): BelongsTo
     {
         return $this->belongsTo(File::class, 'poster_image_id')->withDefault();

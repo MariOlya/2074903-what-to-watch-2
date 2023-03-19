@@ -45,8 +45,6 @@ class User extends Model
 
     public $timestamps = false;
 
-    protected $with = ['avatar', 'role'];
-
     public function avatar(): BelongsTo
     {
         return $this->belongsTo(File::class, 'avatar_id')->withDefault();
