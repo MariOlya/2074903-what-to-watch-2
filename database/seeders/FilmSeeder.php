@@ -21,15 +21,10 @@ class FilmSeeder extends Seeder
         {
             Film::factory()
                 ->count(1)
-                ->for(Director::factory()->state([
-                    'id' => $i
-                ]))
-                ->for(FilmStatus::factory()->state([
-                    'status' => 'ready'
-                ]))
-                ->hasAttached(Actor::factory()->count(3))
-                ->hasAttached(Genre::factory()->count(2))
-                ->create();
+                ->create([
+                    'director_id' => Director::whereId($i)->value('id'),
+                    'status_id' => FilmStatus::whereStatus('ready')->value('id'),
+                ]);
         }
 
     }

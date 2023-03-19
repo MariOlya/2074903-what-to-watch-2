@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UserSeeder extends Seeder
 {
@@ -16,20 +17,20 @@ class UserSeeder extends Seeder
     {
         User::factory()
             ->count(1)
-            ->for(UserRole::factory()->state([
-                'role' => 'admin',
-            ]))->create();
+            ->create([
+                'user_role_id' => UserRole::whereRole('admin')->value('id'),
+            ]);
 
         User::factory()
             ->count(2)
-            ->for(UserRole::factory()->state([
-                'role' => 'moderator',
-            ]))->create();
-
+            ->create([
+                'user_role_id' => UserRole::whereRole('moderator')->value('id'),
+            ]);
         User::factory()
             ->count(7)
-            ->for(UserRole::factory()->state([
-                'role' => 'usual',
-            ]))->create();
+            ->create([
+                'user_role_id' => UserRole::whereRole('usual')->value('id'),
+            ]);
+
     }
 }

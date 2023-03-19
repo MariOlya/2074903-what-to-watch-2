@@ -15,17 +15,25 @@ class CommentSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i = 1; $i <= 20; $i++)
-        {
-            Comment::factory()
-                ->count(1)
-                ->for(User::factory()->state([
-                    'id' => random_int(1, 10),
-                ]))
-                ->for(Review::factory()->state([
-                    'id' => random_int(1, 40),
-                ]))
-                ->create();
+        $reviews = Review::all('id')->map(function (Review $review) {
+            return $review->id;
+        })->toArray();
+
+        $users = User::all('id')->map(function (User $user) {
+            return $user->id;
+        })->toArray();
+
+        foreach ($users as $user) {
+            $randomReviews = array_rand($reviews, 2);
+
+            foreach ($randomReviews as $randomReview) {
+                Comment::factory()
+                    ->count(1)
+                    ->create([
+                        'user_id' => User::whereId($user)->value('id'),
+                        'review_id' => Review::whereId($reviews[$randomReview])->value('id'),
+                    ]);
+            }
         }
     }
 }
