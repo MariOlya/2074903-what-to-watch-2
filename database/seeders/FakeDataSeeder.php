@@ -13,8 +13,12 @@ class FakeDataSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            ActorSeeder::class,
+            GenreSeeder::class,
             UserSeeder::class,
             FilmSeeder::class,
+            ActorFilmSeeder::class,
+            FilmGenreSeeder::class,
             ReviewSeeder::class,
             CommentSeeder::class,
         ]);
