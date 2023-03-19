@@ -66,5 +66,5 @@ To test smth and check website operation you should add fake data.
 They were prepared too, soo just run:
 
 ```
-sail artisan db:seed --class=FakeSeeder
+sail artisan db:seed --class=FakeDataSeeder
 ```
