@@ -135,7 +135,7 @@ class Film extends Model
 
     public function reviews(): HasMany
     {
-        return $this->hasMany(Review::class)->withDefault();
+        return $this->hasMany(Review::class);
     }
 
     public function actors(): BelongsToMany
