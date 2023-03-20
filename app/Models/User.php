@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * App\Models\User
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class User extends Model
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens;
 
     public $timestamps = false;
 
