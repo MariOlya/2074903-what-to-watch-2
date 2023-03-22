@@ -38,6 +38,7 @@ class UserRegisterRequest extends FormRequest
                 'string',
                 'email',
                 'max:50',
+                'lowercase',
                 $this->getUniqueRule(),
             ],
             'password' => [
