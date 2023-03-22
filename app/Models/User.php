@@ -44,6 +44,8 @@ class User extends Model
 {
     use HasFactory, HasApiTokens;
 
+    public const ROLE_DEFAULT = 'usual';
+
     public $timestamps = false;
 
     public function avatar(): BelongsTo
