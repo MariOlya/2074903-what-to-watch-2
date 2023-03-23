@@ -183,6 +183,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         \App\Providers\MovieInfoProvider::class,
+        \App\Providers\UserFactoryProvider::class,
 
         /*
          * Package Service Providers...
