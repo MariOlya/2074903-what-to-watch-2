@@ -35,7 +35,7 @@ class AuthenticationController extends Controller
                     'user' => $user
                 ]
             );
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return new UnauthorizedResponse();
         }
     }
