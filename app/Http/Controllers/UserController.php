@@ -9,8 +9,10 @@ use App\Factories\Interfaces\UserFactoryInterface;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Responses\BaseFailResponse;
 use App\Http\Responses\BaseResponse;
+use App\Http\Responses\FailValidationResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
