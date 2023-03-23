@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 class UserLoginRequest extends FormRequest
