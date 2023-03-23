@@ -26,12 +26,12 @@ class UserController extends Controller
     public function register(UserRegisterRequest $request, UserFactoryInterface $userFactory): BaseResponse
     {
         try {
-            $request->safe()->except('file');
+            $params = $request->safe()->except('file');
 
             // add the rule here to save File and add file id to User
             // $fileParams = $request->safe()->only('file');
 
-            $newUser = $userFactory->createNewUser(new UserDto($request));
+            $newUser = $userFactory->createNewUser(new UserDto($params));
 
             $token = $newUser->createToken('auth-token');
 

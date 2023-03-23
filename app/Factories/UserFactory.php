@@ -24,11 +24,11 @@ class UserFactory implements UserFactoryInterface
      */
     public function createNewUser(UserDto $userDto): User
     {
-        $hashedPassword = Hash::make($userDto->params->password);
+        $hashedPassword = Hash::make($userDto->params['password']);
 
         $this->user->password = $hashedPassword;
-        $this->user->name = $userDto->params->name;
-        $this->user->email = $userDto->params->email;
+        $this->user->name = $userDto->params['name'];
+        $this->user->email = $userDto->params['email'];
         $this->user->user_role_id = UserRole::whereRole(User::ROLE_DEFAULT)->value('id');
 
         if ($userDto->fileId) {
