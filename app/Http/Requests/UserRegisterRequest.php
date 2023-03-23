@@ -54,6 +54,9 @@ class UserRegisterRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return \Illuminate\Validation\Rules\Unique
+     */
     private function getUniqueRule(): \Illuminate\Validation\Rules\Unique
     {
         $rule = Rule::unique(User::class);
@@ -65,6 +68,9 @@ class UserRegisterRequest extends FormRequest
         return $rule;
     }
 
+    /**
+     * @return string
+     */
     private function getPasswordRequiredRule(): string
     {
         return $this->isMethod('patch') ? 'sometimes' : 'required';
