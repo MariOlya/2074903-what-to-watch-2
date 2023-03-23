@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace App\Factories;
+
 use App\Factories\Dto\UserDto;
 use App\Factories\Interfaces\UserFactoryInterface;
 use App\Models\User;
