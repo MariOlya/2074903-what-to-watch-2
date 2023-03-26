@@ -37,11 +37,11 @@ class FilmRepository implements RepositoryInterface
         /** @var Film $film */
         $currentRating = $film->rating;
         $currentVotesAmount = $film->vote_amount;
-        $newVotesAmount = $currentVotesAmount++;
+        $newVotesAmount = ++$currentVotesAmount;
         $newRating = ($currentRating * $currentVotesAmount + $newVote) / $newVotesAmount;
 
         $film->update([
-            'rating' => $newRating,
+            'rating' => round($newRating, 2),
             'vote_amount' => $newVotesAmount
         ], ['touch' => false]);
 
