@@ -9,17 +9,38 @@ use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
 use App\Http\Responses\UnprocessableResponse;
+use App\Models\Film;
+use App\Models\User;
+use App\Repositories\FilmRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FilmController extends Controller
 {
+    public function __construct(
+        readonly FilmRepository $filmRepository
+    )
+    {
+    }
+
     public function getFilmInfo(int $filmId): BaseResponse
     {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
+        $film = $this->filmRepository->findById($filmId);
+
+        if (!$film) {
             return new NotFoundResponse();
         }
-        return new SuccessResponse();
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($user) {
+            $isFavorite = (bool)$user->favoriteFilms()->where('id', '=', $filmId)->first('id');
+            $film = $film->toArray();
+            $film['is_favorite'] = $isFavorite;
+        }
+
+        return new SuccessResponse(data: $film);
     }
 
     public function addFavoriteFilm(Request $request, int $filmId): BaseResponse
