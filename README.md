@@ -63,3 +63,11 @@ They were prepared too, soo just run:
 ```
 sail artisan db:seed
 ```
+
+### Tests
+
+We work here with PHPUnit. To start tests just run:
+
+```
+sail artisan test
+```
