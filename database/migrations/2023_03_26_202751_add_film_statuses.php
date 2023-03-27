@@ -30,6 +30,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement("SET foreign_key_checks=0");
         DB::table('film_statuses')->truncate();
+        DB::statement("SET foreign_key_checks=1");
     }
 };

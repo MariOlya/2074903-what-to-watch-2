@@ -29,6 +29,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement("SET foreign_key_checks=0");
         DB::table('link_types')->truncate();
+        DB::statement("SET foreign_key_checks=1");
     }
 };
