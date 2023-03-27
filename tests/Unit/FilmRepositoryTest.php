@@ -25,6 +25,7 @@ class FilmRepositoryTest extends TestCase
         $film->save();
 
         $filmId = $film->id;
+        $filmUpdated = $film->updated_at;
 
         $repository = new FilmRepository();
 
@@ -37,11 +38,14 @@ class FilmRepositoryTest extends TestCase
 
         $this->assertEquals(6.50, $firstUpdate->rating);
         $this->assertEquals(2339, $firstUpdate->vote_amount);
+        $this->assertEquals($filmUpdated, $firstUpdate->updated_at);
 
         $this->assertEquals(6.50, $secondUpdate->rating);
         $this->assertEquals(2340, $secondUpdate->vote_amount);
+        $this->assertEquals($filmUpdated, $secondUpdate->updated_at);
 
         $this->assertEquals(6.50, $thirdUpdate->rating);
         $this->assertEquals(2341, $thirdUpdate->vote_amount);
+        $this->assertEquals($filmUpdated, $thirdUpdate->updated_at);
     }
 }
