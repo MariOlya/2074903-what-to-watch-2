@@ -12,9 +12,6 @@ class FilmRepositoryTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /**
-     * A basic unit test example.
-     */
     public function testUpdateFilmRating(): void
     {
         $film = new Film();
