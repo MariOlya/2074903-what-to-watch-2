@@ -5,9 +5,23 @@ declare(strict_types=1);
 namespace App\Factories\Dto;
 abstract class Dto
 {
-    public function __construct(
-        readonly array $params,
-    )
+    protected array $params;
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
     {
+        return $this->params;
     }
+
+    /**
+     * @param array $params
+     */
+    public function setParams(array $params): void
+    {
+        $this->params = $params;
+    }
+
+
 }
