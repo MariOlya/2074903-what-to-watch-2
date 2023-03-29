@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserLoginRequest;
-use App\Http\Responses\BaseFailResponse;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NoContentResponse;
 use App\Http\Responses\SuccessResponse;
@@ -42,15 +41,8 @@ class AuthenticationController extends Controller
 
     public function logout(Request $request): BaseResponse
     {
-        try {
-            $request->user()->tokens()->delete();
+        $request->user()->tokens()->delete();
 
-            return new NoContentResponse();
-
-        } catch (\Throwable $e) {
-            return new BaseFailResponse(
-                exception: $e
-            );
-        }
+        return new NoContentResponse();
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use App\Http\Responses\BaseFailResponse;
+use App\Http\Responses\ServerErrorResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -41,8 +43,11 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(static function (\Throwable $e) {
+            if ($e instanceof \Error) {
+                return new ServerErrorResponse();
+            }
+            return new BaseFailResponse(exception: $e);
         });
     }
 }

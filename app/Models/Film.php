@@ -80,6 +80,8 @@ class Film extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public $fillable = ['rating', 'vote_amount'];
+
     public function posterImage(): BelongsTo
     {
         return $this->belongsTo(File::class, 'poster_image_id')->withDefault();

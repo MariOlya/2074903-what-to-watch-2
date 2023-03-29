@@ -6,7 +6,6 @@
               </a>
         <h1 align="center">What To Watch</h1>
         <h3 align="center">study project by Olga Marinina</h3>
-</p>
 
 <p align="center">
 <img src="https://img.shields.io/badge/php-%5E8.1-blue">
@@ -54,11 +53,7 @@ sail artisan migrate
 #### 1. Strict data
 
 In this project we have default set data for file type, film status, user role, link type.
-So these data will be needed for you any way. To upload these to DB just run:
-
-```
-sail artisan db:seed
-```
+So these data will be needed for you any way, so they were added in migrations
 
 #### 2. Fake data
 
@@ -66,5 +61,13 @@ To test smth and check website operation you should add fake data.
 They were prepared too, soo just run:
 
 ```
-sail artisan db:seed --class=FakeDataSeeder
+sail artisan db:seed
+```
+
+### Tests
+
+We work here with PHPUnit. To start tests just run:
+
+```
+sail artisan test
 ```

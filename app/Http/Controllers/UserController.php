@@ -7,12 +7,9 @@ namespace App\Http\Controllers;
 use App\Factories\Dto\UserDto;
 use App\Factories\Interfaces\UserFactoryInterface;
 use App\Http\Requests\UserRegisterRequest;
-use App\Http\Responses\BaseFailResponse;
 use App\Http\Responses\BaseResponse;
-use App\Http\Responses\FailValidationResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,26 +24,22 @@ class UserController extends Controller
      */
     public function register(UserRegisterRequest $request, UserFactoryInterface $userFactory): BaseResponse
     {
-        try {
-            $params = $request->safe()->except('file');
+        $params = $request->safe()->except('file');
 
-            // add the rule here to save File and add file id to User
-            // $fileParams = $request->safe()->only('file');
+        // add the rule here to save File and add file id to User
+        // $fileParams = $request->safe()->only('file');
 
-            $newUser = $userFactory->createNewUser(new UserDto($params));
+        $newUser = $userFactory->createNewUser(new UserDto($params));
 
-            $token = $newUser->createToken('auth-token');
+        $token = $newUser->createToken('auth-token');
 
-            return new SuccessResponse(
-                codeResponse: Response::HTTP_CREATED,
-                data: [
-                    'user' => $newUser,
-                    'token' => $token->plainTextToken,
-                ]
-            );
-        } catch (\Throwable $e) {
-            return new BaseFailResponse(exception: $e);
-        }
+        return new SuccessResponse(
+            codeResponse: Response::HTTP_CREATED,
+            data: [
+                'user' => $newUser,
+                'token' => $token->plainTextToken,
+            ]
+        );
     }
 
     public function getUser(): BaseResponse

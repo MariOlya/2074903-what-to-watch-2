@@ -47,7 +47,9 @@ class Review extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class)->withDefault();
+        return $this->belongsTo(User::class)->withDefault([
+            'name' => 'Гость'
+        ]);
     }
 
     public function film(): BelongsTo
