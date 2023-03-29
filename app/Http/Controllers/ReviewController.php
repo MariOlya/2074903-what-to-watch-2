@@ -10,6 +10,7 @@ use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
@@ -24,6 +25,11 @@ class ReviewController extends Controller
         if ($filmId === 2) {
             return new UnauthorizedResponse();
         }
+
+        //Add review + update rating
+        DB::transaction(static function () use ($filmId) {
+        }, 5);
+
 
         return new SuccessResponse();
     }
