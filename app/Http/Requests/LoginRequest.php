@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Api\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
-class UserLoginRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
