@@ -6,11 +6,11 @@ use App\Factories\Dto\Dto;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
-interface RepositoryInterface
+interface BaseRepositoryInterface
 {
     public function all(array $columns = ['*']): Collection;
 
-    public function update(Dto $data, int $id): Model;
+    public function update(int $id, Dto $dto): Model;
 
     public function delete(int $id): void;
 

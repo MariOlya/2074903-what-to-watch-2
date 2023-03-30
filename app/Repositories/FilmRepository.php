@@ -6,19 +6,19 @@ namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
 use App\Models\Film;
-use App\Repositories\Interfaces\RepositoryInterface;
+use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class FilmRepository implements RepositoryInterface
+class FilmRepository implements FilmRepositoryInterface
 {
     public function all(array $columns = ['*']): Collection
     {
         return Film::all($columns);
     }
 
-    public function update(Dto $data, int $id): Model
+    public function update(int $id, Dto $dto): Model
     {
         $film = Film::whereId($id);
         // TODO: Implement update() method.
