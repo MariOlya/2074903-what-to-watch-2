@@ -184,6 +184,7 @@ return [
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         \App\Providers\MovieInfoProvider::class,
         \App\Providers\UserFactoryProvider::class,
+        \App\Providers\RepositoryProvider::class,
 
         /*
          * Package Service Providers...

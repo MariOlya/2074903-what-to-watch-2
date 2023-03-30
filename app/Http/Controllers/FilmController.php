@@ -9,16 +9,15 @@ use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
 use App\Http\Responses\UnprocessableResponse;
-use App\Models\Film;
 use App\Models\User;
-use App\Repositories\FilmRepository;
+use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FilmController extends Controller
 {
     public function __construct(
-        readonly FilmRepository $filmRepository
+        readonly FilmRepositoryInterface $filmRepository
     )
     {
     }
