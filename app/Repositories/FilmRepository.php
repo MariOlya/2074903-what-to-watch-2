@@ -13,9 +13,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FilmRepository implements FilmRepositoryInterface
 {
-    public function all(array $columns = ['*']): Collection
+    public function all(array $columns = ['*'], int $limit = 100, int $offset = 0): Collection
     {
-        return Film::all($columns);
+        return Film::query()->limit($limit)->offset($offset)->get($columns);
     }
 
     public function update(int $id, Dto $dto): Model

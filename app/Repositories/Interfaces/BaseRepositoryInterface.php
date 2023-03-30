@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 interface BaseRepositoryInterface
 {
-    public function all(array $columns = ['*']): Collection;
+    public function all(array $columns = ['*'], int $limit = 100, int $offset = 0): Collection;
 
     public function update(int $id, Dto $dto): Model;
 
