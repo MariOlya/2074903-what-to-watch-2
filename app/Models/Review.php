@@ -42,8 +42,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Review extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    public $fillable = [
+        'text',
+        'rating',
+    ];
 
     public function user(): BelongsTo
     {

@@ -80,7 +80,24 @@ class Film extends Model
     use HasFactory;
     use SoftDeletes;
 
-    public $fillable = ['rating', 'vote_amount'];
+    public $fillable = [
+        'rating',
+        'vote_amount',
+        'name',
+        'poster_image_id',
+        'preview_image_id',
+        'background_image_id',
+        'background_color_id',
+        'video_link_id',
+        'preview_video_link_id',
+        'description',
+        'director_id',
+        'run_time',
+        'released',
+        'status_id',
+        'imdb_id',
+        'promo'
+    ];
 
     public function posterImage(): BelongsTo
     {

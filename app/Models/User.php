@@ -27,7 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read int|null $favorite_films_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $reviews
  * @property-read int|null $reviews_count
- * @property-read \App\Models\UserRole|null $role
+ * @property-read \App\Models\UserRole|null $userRole
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
@@ -46,15 +46,24 @@ class User extends Authenticatable
     use HasFactory, HasApiTokens, Notifiable;
 
     public const ROLE_DEFAULT = 'usual';
+    public const MODERATOR_ROLE = 'moderator';
 
     public $timestamps = false;
+
+    public $fillable = [
+        'name',
+        'email',
+        'password',
+        'avatar_id',
+        'user_role_id'
+    ];
 
     public function avatar(): BelongsTo
     {
         return $this->belongsTo(File::class, 'avatar_id')->withDefault();
     }
 
-    public function role(): BelongsTo
+    public function userRole(): BelongsTo
     {
         return $this->belongsTo(UserRole::class);
     }
