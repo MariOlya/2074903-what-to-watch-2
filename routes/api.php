@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->post('/promo/{filmId}', [\App\Http\Controller
 
 /** Actions with genres */
 Route::get('/genres', [\App\Http\Controllers\GenreController::class, 'getGenres']);
-Route::middleware('auth:sanctum')->patch('/genres/{genreId}', [\App\Http\Controllers\GenreController::class, 'updateGenre']);
+Route::middleware('auth:sanctum')->patch('/genres/{genre}', [\App\Http\Controllers\GenreController::class, 'updateGenre']);
 
 /** Actions with review */
 Route::middleware('auth:sanctum')->post('/films/{filmId}/comments', [\App\Http\Controllers\ReviewController::class, 'addNewReview']);
