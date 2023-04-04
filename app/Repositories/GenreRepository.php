@@ -15,12 +15,12 @@ class GenreRepository implements GenreRepositoryInterface
 
     public function all(array $columns = ['*'], int $limit = 100, int $offset = 0): Collection
     {
-        return Film::query()->limit($limit)->offset($offset)->get($columns);
+        return Genre::query()->limit($limit)->offset($offset)->get($columns);
     }
 
     public function update(int $id, string $genre): Model
     {
-        $updatedGenre = Genre::whereId($id);
+        $updatedGenre = Genre::query()->find($id);
 
         if ($genre !== $updatedGenre->genre) {
             $updatedGenre->genre = $genre;
