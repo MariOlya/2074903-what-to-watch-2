@@ -6,16 +6,27 @@ namespace App\Http\Controllers;
 
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NotFoundResponse;
+use App\Http\Responses\PaginatedSuccessResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
+use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
 
 class FilmsController extends Controller
 {
+    public function __construct(
+        readonly FilmRepositoryInterface $filmRepository
+    )
+    {
+    }
+
     public function getFilms(Request $request): BaseResponse
     {
-        //
-        return new SuccessResponse();
+        $queryParams = $request->all();
+        $paginatedListFilms = $this->filmRepository->paginateList($queryParams);
+        return new PaginatedSuccessResponse(
+            data: $paginatedListFilms
+        );
     }
 
     public function getFavoriteFilms(): BaseResponse
