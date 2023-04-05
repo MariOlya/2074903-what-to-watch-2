@@ -80,6 +80,10 @@ class Film extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public const FILM_DEFAULT_STATUS = 'ready';
+    public const FILM_DEFAULT_ORDER_BY = 'released';
+    public const FILM_DEFAULT_ORDER_TO = 'DESC';
+
     public $fillable = [
         'rating',
         'vote_amount',

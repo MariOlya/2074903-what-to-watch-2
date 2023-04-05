@@ -6,14 +6,21 @@ namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
 use App\Models\Film;
+use App\Models\FilmStatus;
+use App\Models\Genre;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
+use phpDocumentor\Reflection\Types\Self_;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FilmRepository implements FilmRepositoryInterface
 {
-    public function all(array $columns = ['*'], int $limit = 100, int $offset = 0): Collection
+    public const DEFAULT_PAGE = 1;
+    public const DEFAULT_PAGE_SIZE = 8;
+
+    public function all(array $columns = ['*'], int $limit = self::DEFAULT_LIMIT, int $offset = self::DEFAULT_OFFSET): Collection
     {
         return Film::query()->limit($limit)->offset($offset)->get($columns);
     }
@@ -67,5 +74,52 @@ class FilmRepository implements FilmRepositoryInterface
     public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model
     {
         return Film::query()->where($field, '=', $value)->first($columns);
+    }
+
+    public function paginateList(
+        array $queryParams,
+        array $columns = ['films.id as id', 'name', 'previewImage.link as preview_image', 'previewVideoLink.link as preview_video_link']
+    ): LengthAwarePaginator {
+        $queryParams['limit'] = $queryParams['limit'] ?? self::DEFAULT_LIMIT;
+        $queryParams['offset'] = $queryParams['offset'] ?? self::DEFAULT_OFFSET;
+        $queryParams['pageSize'] = $queryParams['pageSize'] ?? self::DEFAULT_PAGE_SIZE;
+        $queryParams['page'] = $queryParams['page'] ?? self::DEFAULT_PAGE;
+        $queryParams['status'] = $queryParams['status'] ?? Film::FILM_DEFAULT_STATUS;
+        $status_id = FilmStatus::whereStatus($queryParams['status'])->value('id');
+        $queryParams['order_by'] = $queryParams['order_by'] ?? Film::FILM_DEFAULT_ORDER_BY;
+        $queryParams['order_to'] = $queryParams['order_to'] ?? Film::FILM_DEFAULT_ORDER_TO;
+
+        $basedBuilder = Film::query()
+            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
+            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
+            ->where('status_id', '=', $status_id);
+
+        if (isset($queryParams['genre'])) {
+            $filmIds = array_map(
+                static fn ($film) => $film['id'],
+                Genre::whereGenre($queryParams['genre'])->first()?->films->toArray()
+            );
+
+            return $basedBuilder
+                ->whereIn('films.id', $filmIds)
+                ->orderBy($queryParams['order_by'], $queryParams['order_to'])
+                ->limit($queryParams['limit'])
+                ->offset($queryParams['offset'])
+                ->paginate(
+                    perPage: $queryParams['pageSize'],
+                    columns: $columns,
+                    page: $queryParams['page']
+                );
+        }
+
+        return $basedBuilder
+            ->orderBy($queryParams['order_by'], $queryParams['order_to'])
+            ->limit($queryParams['limit'])
+            ->offset($queryParams['offset'])
+            ->paginate(
+                perPage: $queryParams['pageSize'],
+                columns: $columns,
+                page: $queryParams['page']
+            );
     }
 }

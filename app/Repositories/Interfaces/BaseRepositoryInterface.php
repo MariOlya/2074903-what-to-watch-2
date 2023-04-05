@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 
 interface BaseRepositoryInterface
 {
-    public function all(array $columns = ['*'], int $limit = 100, int $offset = 0): Collection;
+    public const DEFAULT_LIMIT = 100;
+    public const DEFAULT_OFFSET = 0;
+
+    public function all(array $columns = ['*'], int $limit = self::DEFAULT_LIMIT, int $offset = self::DEFAULT_OFFSET): Collection;
 
     public function update(int $id, Dto $dto): Model;
 
