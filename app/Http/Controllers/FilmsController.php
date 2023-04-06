@@ -9,8 +9,11 @@ use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\PaginatedSuccessResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
+use App\Models\Film;
+use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FilmsController extends Controller
 {
@@ -23,6 +26,20 @@ class FilmsController extends Controller
     public function getFilms(Request $request): BaseResponse
     {
         $queryParams = $request->all();
+        /** @var User $currentUser */
+        $currentUser = $request->user('sanctum');
+
+        if (
+            isset($queryParams['status']) &&
+            $queryParams['status'] !== Film::FILM_DEFAULT_STATUS &&
+            ($currentUser === null ||
+            $currentUser->userRole->role === User::ROLE_DEFAULT)
+        ) {
+            $queryParams['status'] = Film::FILM_DEFAULT_STATUS;
+//            dd($queryParams['status']);
+
+        }
+
         $paginatedListFilms = $this->filmRepository->paginateList($queryParams);
         return new PaginatedSuccessResponse(
             data: $paginatedListFilms
