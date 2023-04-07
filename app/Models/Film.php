@@ -81,6 +81,7 @@ class Film extends Model
     use SoftDeletes;
 
     public const FILM_DEFAULT_STATUS = 'ready';
+    public const NEW_FILM_STATUS = 'pending';
     public const FILM_DEFAULT_ORDER_BY = 'released';
     public const FILM_DEFAULT_ORDER_TO = 'DESC';
 
