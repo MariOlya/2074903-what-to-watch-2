@@ -64,7 +64,17 @@ class FilmRepository implements FilmRepositoryInterface
 
     public function findById(int $id, array $columns = ['*']): ?Model
     {
-        return Film::query()->find($id, $columns);
+        return Film::with([
+            'posterImage',
+            'previewImage',
+            'backgroundImage',
+            'backgroundColor',
+            'videoLink',
+            'previewVideoLink',
+            'director',
+            'actors',
+            'genres'
+        ])->find($id, $columns);
     }
 
     public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model
