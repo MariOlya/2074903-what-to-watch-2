@@ -14,8 +14,7 @@ interface FilmRepositoryInterface extends BaseRepositoryInterface
 
     public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model;
 
-    public function paginateList(
-        array $queryParams,
-        array $columns = ['name', 'previewImage.link', 'previewVideoLink.link']
-    ): LengthAwarePaginator;
+    public function paginateList(array $queryParams, array $columns = ['*']): LengthAwarePaginator;
+
+    public function similarFilms(int $id, array $columns = ['*']): ?\Illuminate\Support\Collection;
 }

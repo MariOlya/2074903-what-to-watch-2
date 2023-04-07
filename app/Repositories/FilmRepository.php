@@ -12,7 +12,7 @@ use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
-use phpDocumentor\Reflection\Types\Self_;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FilmRepository implements FilmRepositoryInterface
@@ -78,21 +78,26 @@ class FilmRepository implements FilmRepositoryInterface
 
     public function paginateList(
         array $queryParams,
-        array $columns = ['films.id as id', 'name', 'previewImage.link as preview_image', 'previewVideoLink.link as preview_video_link']
+        array $columns = [
+            'films.id as id',
+            'name',
+            'previewImage.link as preview_image',
+            'previewVideoLink.link as preview_video_link'
+        ]
     ): LengthAwarePaginator {
         $queryParams['limit'] = $queryParams['limit'] ?? self::DEFAULT_LIMIT;
         $queryParams['offset'] = $queryParams['offset'] ?? self::DEFAULT_OFFSET;
         $queryParams['pageSize'] = $queryParams['pageSize'] ?? self::DEFAULT_PAGE_SIZE;
         $queryParams['page'] = $queryParams['page'] ?? self::DEFAULT_PAGE;
         $queryParams['status'] = $queryParams['status'] ?? Film::FILM_DEFAULT_STATUS;
-        $status_id = FilmStatus::whereStatus($queryParams['status'])->value('id');
         $queryParams['order_by'] = $queryParams['order_by'] ?? Film::FILM_DEFAULT_ORDER_BY;
         $queryParams['order_to'] = $queryParams['order_to'] ?? Film::FILM_DEFAULT_ORDER_TO;
 
         $basedBuilder = Film::query()
             ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
             ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
-            ->where('status_id', '=', $status_id);
+            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
+            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS);
 
         if (isset($queryParams['genre'])) {
             $filmIds = array_map(
@@ -121,5 +126,28 @@ class FilmRepository implements FilmRepositoryInterface
                 columns: $columns,
                 page: $queryParams['page']
             );
+    }
+
+    public function similarFilms(int $id, array $columns = [
+        'films.id as id',
+        'name',
+        'previewImage.link as preview_image',
+        'previewVideoLink.link as preview_video_link'
+    ]
+    ): ?\Illuminate\Support\Collection {
+        $genreIds = array_map(
+            static fn ($genre) => $genre['id'],
+            Film::whereId($id)->first()?->genres->toArray());
+
+        return DB::table('films')
+            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
+            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
+            ->join('film_genre', 'films.id', '=', 'film_genre.film_id')
+            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
+            ->whereIn('film_genre.genre_id', $genreIds)
+            ->whereNot('film_id', '=', $id)
+            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS)
+            ->limit(4)
+            ->get($columns);
     }
 }
