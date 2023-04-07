@@ -13,7 +13,6 @@ use App\Models\Film;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class FilmsController extends Controller
 {
@@ -36,8 +35,6 @@ class FilmsController extends Controller
             $currentUser->userRole->role === User::ROLE_DEFAULT)
         ) {
             $queryParams['status'] = Film::FILM_DEFAULT_STATUS;
-//            dd($queryParams['status']);
-
         }
 
         $paginatedListFilms = $this->filmRepository->paginateList($queryParams);
@@ -58,10 +55,11 @@ class FilmsController extends Controller
 
     public function getSimilarFilms(int $filmId): BaseResponse
     {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
+        $films = $this->filmRepository->similarFilms($filmId);
+
+        if (!$films) {
             return new NotFoundResponse();
         }
-        return new SuccessResponse();
+        return new SuccessResponse(data: $films);
     }
 }
