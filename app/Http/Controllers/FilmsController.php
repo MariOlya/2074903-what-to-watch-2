@@ -13,6 +13,7 @@ use App\Models\Film;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FilmsController extends Controller
 {
@@ -22,6 +23,12 @@ class FilmsController extends Controller
     {
     }
 
+    /**
+     * POLICY: Only moderator can ask films in another status (pending, moderate)
+     *
+     * @param Request $request
+     * @return BaseResponse
+     */
     public function getFilms(Request $request): BaseResponse
     {
         $queryParams = $request->all();
@@ -43,16 +50,34 @@ class FilmsController extends Controller
         );
     }
 
+    /**
+     * POLICY: Only own favorite films
+     *
+     * @return BaseResponse
+     */
     public function getFavoriteFilms(): BaseResponse
     {
-        //there will be check that the user is logged, but we set now 'mock'
-        try {
-            return new SuccessResponse();
-        } catch (\Throwable) {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user) {
             return new UnauthorizedResponse();
         }
+
+        $userId = $user->id;
+
+        $paginatedFavoriteFilms = $this->filmRepository->favoriteFilms($userId);
+        return new PaginatedSuccessResponse(
+            data: $paginatedFavoriteFilms
+        );
     }
 
+    /**
+     * POLICY: Free for all
+     *
+     * @param int $filmId
+     * @return BaseResponse
+     */
     public function getSimilarFilms(int $filmId): BaseResponse
     {
         $films = $this->filmRepository->similarFilms($filmId);
