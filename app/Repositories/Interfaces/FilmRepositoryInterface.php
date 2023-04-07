@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Interfaces;
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -16,5 +16,7 @@ interface FilmRepositoryInterface extends BaseRepositoryInterface
 
     public function paginateList(array $queryParams, array $columns = ['*']): LengthAwarePaginator;
 
-    public function similarFilms(int $id, array $columns = ['*']): ?\Illuminate\Support\Collection;
+    public function similarFilms(int $id, array $columns = ['*']): ?Collection;
+
+    public function favoriteFilms(int $userId, array $columns = ['*']): LengthAwarePaginator;
 }

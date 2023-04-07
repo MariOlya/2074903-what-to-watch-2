@@ -6,10 +6,11 @@ namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
 use App\Models\Film;
-use App\Models\FilmStatus;
 use App\Models\Genre;
+use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as DbCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,7 @@ class FilmRepository implements FilmRepositoryInterface
             ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
             ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
             ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
-            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS);
+            ->where('film_statuses.status', '=', $queryParams['status']);
 
         if (isset($queryParams['genre'])) {
             $filmIds = array_map(
@@ -134,7 +135,7 @@ class FilmRepository implements FilmRepositoryInterface
         'previewImage.link as preview_image',
         'previewVideoLink.link as preview_video_link'
     ]
-    ): ?\Illuminate\Support\Collection {
+    ): ?DbCollection {
         $genreIds = array_map(
             static fn ($genre) => $genre['id'],
             Film::whereId($id)->first()?->genres->toArray());
@@ -149,5 +150,32 @@ class FilmRepository implements FilmRepositoryInterface
             ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS)
             ->limit(4)
             ->get($columns);
+    }
+
+    public function favoriteFilms(int $userId, array $columns = [
+        'films.id as id',
+        'name',
+        'previewImage.link as preview_image',
+        'previewVideoLink.link as preview_video_link'
+    ]
+    ): LengthAwarePaginator {
+        $filmIds = array_map(
+            static fn ($film) => $film['id'],
+            User::whereId($userId)->first()?->favoriteFilms->toArray());
+
+        return Film::query()
+            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
+            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
+            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
+            ->whereIn('films.id', $filmIds)
+            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS)
+            ->orderBy(Film::FILM_DEFAULT_ORDER_BY, Film::FILM_DEFAULT_ORDER_TO)
+            ->limit(self::DEFAULT_LIMIT)
+            ->offset(self::DEFAULT_OFFSET)
+            ->paginate(
+                perPage: self::DEFAULT_PAGE_SIZE,
+                columns: $columns,
+                page: self::DEFAULT_PAGE
+            );
     }
 }
