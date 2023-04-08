@@ -37,7 +37,7 @@ class FilmPolicy
      */
     public function update(User $user, Film $film): bool
     {
-        //
+        return $user->userRole->role === User::MODERATOR_ROLE;
     }
 
     /**
