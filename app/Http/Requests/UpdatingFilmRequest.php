@@ -42,7 +42,8 @@ class UpdatingFilmRequest extends FormRequest
             'background_color' => [
                 'string',
                 'max:9',
-                'regex:/^#[A-Za-z0-9]{6,6}$/'
+                'lowercase',
+                'regex:/^#[a-z0-9]{6,6}$/'
             ],
             'video_link' => [
                 'string',
