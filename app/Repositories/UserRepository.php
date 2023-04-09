@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository implements UserRepositoryInterface
 {
-
     public function update(int $id, UserDto $dto): Model
     {
         $updatedUser = User::query()->find($id);
