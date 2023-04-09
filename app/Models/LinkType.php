@@ -24,6 +24,9 @@ class LinkType extends Model
 {
     use HasFactory;
 
+    public const PREVIEW_TYPE = 'preview';
+    public const VIDEO_TYPE = 'video';
+
     public $timestamps = false;
 
     public function links(): HasMany

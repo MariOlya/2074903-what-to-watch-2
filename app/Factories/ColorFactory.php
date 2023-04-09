@@ -12,6 +12,11 @@ class ColorFactory implements ColorFactoryInterface
     {
     }
 
+    /**
+     * @param string $color
+     * @return Color
+     * @throws InternalErrorException
+     */
     public function createNewColor(string $color): Color
     {
         $this->color->color = $color;
