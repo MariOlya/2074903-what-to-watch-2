@@ -5,10 +5,19 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
+use App\Factories\Interfaces\FilmFileFactoryInterface;
+use App\Factories\Interfaces\LinkFactoryInterface;
+use App\Models\Actor;
+use App\Models\Color;
+use App\Models\Director;
+use App\Models\FileType;
 use App\Models\Film;
+use App\Models\FilmStatus;
 use App\Models\Genre;
+use App\Models\LinkType;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
+use App\Services\FileService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as DbCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -21,28 +30,190 @@ class FilmRepository implements FilmRepositoryInterface
     public const DEFAULT_PAGE = 1;
     public const DEFAULT_PAGE_SIZE = 8;
 
+    public function __construct(
+        readonly FilmFileFactoryInterface $imageFactory,
+        readonly LinkFactoryInterface $linkFactory,
+    ) {
+    }
+
     public function all(array $columns = ['*'], int $limit = self::DEFAULT_LIMIT, int $offset = self::DEFAULT_OFFSET): Collection
     {
         return Film::query()->limit($limit)->offset($offset)->get($columns);
     }
 
+    /**
+     * @param int $id
+     * @param Dto $dto
+     * @return Model
+     * @throws \Exception
+     */
     public function update(int $id, Dto $dto): Model
     {
-        $film = Film::whereId($id);
-        // TODO: Implement update() method.
-        $film->update();
+        /** @var Film $film */
+        $film = $this->findById($id);
+
+        $newName = $dto->getParams()['name'] ?? null;
+        $newPosterImage = $dto->getParams()['poster_image'] ?? null;
+        $newPreviewImage = $dto->getParams()['preview_image'] ?? null;
+        $newBackgroundImage = $dto->getParams()['background_image'] ?? null;
+        $newBackgroundColor = $dto->getParams()['background_color'] ?? null;
+        $newVideoLink = $dto->getParams()['video_link'] ?? null;
+        $newPreviewVideoLink = $dto->getParams()['preview_video_link'] ?? null;
+        $newDescription = $dto->getParams()['description'] ?? null;
+        $newDirector = $dto->getParams()['director'] ?? null;
+        $newActors = $dto->getParams()['starring'] ?? null;
+        $newGenres = $dto->getParams()['genre'] ?? null;
+        $newRunTime = $dto->getParams()['run_time'] ?? null;
+        $newReleasedYear = $dto->getParams()['released'] ?? null;
+        $newImdbId = $dto->getParams()['imdb_id'] ?? null;
+        $newStatus = $dto->getParams()['status'] ?? null;
+
+        $previousPosterImage = $film->posterImage->link ?? null;
+        $previousPreviewImage = $film->previewImage->link ?? null;
+        $previousBackgroundImage = $film->backgroundImage->link ?? null;
+
+        DB::beginTransaction();
+
+        try {
+            if ($newName && $newName !== $film->name) {
+                $film->name = $newName;
+            }
+
+            if ($newPosterImage && $newPosterImage !== $previousPosterImage) {
+                if ($previousPosterImage) {
+                    $film->posterImage()->delete();
+                }
+                $posterImageId = $this->imageFactory->createFromEditForm($newPosterImage, FileType::POSTER_TYPE);
+                $film->poster_image_id = $posterImageId;
+            }
+
+            if ($newPreviewImage && $newPreviewImage !== $previousPreviewImage) {
+                if ($previousPreviewImage) {
+                    $film->previewImage()->delete();
+                }
+                $previewImageId = $this->imageFactory->createFromEditForm($newPreviewImage, FileType::PREVIEW_TYPE);
+                $film->preview_image_id = $previewImageId;
+            }
+
+            if ($newBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
+                if ($previousBackgroundImage) {
+                    $film->backgroundImage()->delete();
+                }
+                $backgroundImageId = $this->imageFactory->createFromEditForm(
+                    $newBackgroundImage,
+                    FileType::BACKGROUND_TYPE
+                );
+                $film->background_image_id = $backgroundImageId;
+            }
+
+            if ($newBackgroundColor && $newBackgroundColor !== $film->backgroundColor->color) {
+                $newColor = Color::query()->firstOrCreate([
+                    'color' => $newBackgroundColor
+                ]);
+
+                $film->background_color_id = $newColor->id;
+            }
+
+            if ($newVideoLink && $newVideoLink !== $film->videoLink->link) {
+                if ($film->videoLink->link) {
+                    $film->videoLink()->delete();
+                }
+                $videoLinkId = $this->linkFactory->createNewLink($newVideoLink, LinkType::VIDEO_TYPE);
+                $film->video_link_id = $videoLinkId;
+            }
+
+            if ($newPreviewVideoLink && $newPreviewVideoLink !== $film->previewVideoLink->link) {
+                if ($film->previewVideoLink->link) {
+                    $film->previewVideoLink()->delete();
+                }
+                $previewVideoLinkId = $this->linkFactory->createNewLink($newPreviewVideoLink, LinkType::PREVIEW_TYPE);
+                $film->preview_video_link_id = $previewVideoLinkId;
+            }
+
+            if ($newDescription && $newDescription !== $film->description) {
+                $film->description = $newDescription;
+            }
+
+            if ($newDirector && $newDirector !== $film->director->name) {
+                $newDirectorLink = Director::query()->firstOrCreate([
+                    'name' => $newDirector
+                ]);
+
+                $film->director_id = $newDirectorLink->id;
+            }
+
+            if ($newActors) {
+                $newActorIds = [];
+                foreach ($newActors as $newActor) {
+                    $actor = Actor::query()->firstOrCreate([
+                        'name' => $newActor
+                    ]);
+                    $newActorIds[] = $actor->id;
+                }
+
+                $film->actors()->sync($newActorIds);
+            }
+
+            if ($newGenres) {
+                $newGenreIds = [];
+                foreach ($newGenres as $newGenre) {
+                    $genre = Genre::query()->firstOrCreate([
+                        'genre' => $newGenre
+                    ]);
+                    $newGenreIds[] = $genre->id;
+                }
+
+                $film->genres()->sync($newGenreIds);
+            }
+
+            if ($newRunTime && $newRunTime !== $film->run_time) {
+                $film->run_time = $newRunTime;
+            }
+
+            if ($newReleasedYear && $newReleasedYear !== $film->released) {
+                $film->released = $newReleasedYear;
+            }
+
+            if ($newImdbId && $newImdbId !== $film->imdb_id) {
+                $film->imdb_id = $newImdbId;
+            }
+
+            if ($newStatus && $newStatus !== $film->status->status) {
+                $film->status_id = FilmStatus::whereStatus($newStatus)->first();
+            }
+
+            $film->save();
+
+            DB::commit();
+
+            if ($previousPosterImage) {
+                FileService::deleteFileFromStorage(substr($previousPosterImage, 4));
+            }
+
+            if ($previousPreviewImage) {
+                FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
+            }
+
+            if ($previousBackgroundImage) {
+                FileService::deleteFileFromStorage(substr($previousBackgroundImage, 4));
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
         return $film;
     }
 
     public function updateRating(int $id, int $newVote): Model
     {
-        $film = $this->findById($id);
+        /** @var Film $film */
+        $film = Film::whereId($id)->first();
 
         if (!$film) {
             throw new NotFoundHttpException('This film is not found', null, 404);
         }
 
-        /** @var Film $film */
         $currentRating = $film->rating;
         $currentVotesAmount = $film->vote_amount;
         $newVotesAmount = ++$currentVotesAmount;
