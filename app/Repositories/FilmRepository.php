@@ -179,30 +179,30 @@ class FilmRepository implements FilmRepositoryInterface
             }
 
             if ($newStatus && $newStatus !== $film->status->status) {
-                $film->status_id = FilmStatus::whereStatus($newStatus)->first();
+                $film->status_id = FilmStatus::whereStatus($newStatus)->value('id');
             }
 
             $film->save();
 
             DB::commit();
 
-            if ($previousPosterImage) {
+            if ($previousPosterImage && $newPosterImage !== $previousPosterImage) {
                 FileService::deleteFileFromStorage(substr($previousPosterImage, 4));
             }
 
-            if ($previousPreviewImage) {
+            if ($previousPreviewImage && $newPreviewImage !== $previousPreviewImage) {
                 FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
             }
 
-            if ($previousBackgroundImage) {
+            if ($previousBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
                 FileService::deleteFileFromStorage(substr($previousBackgroundImage, 4));
             }
+
+            return $film;
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
         }
-
-        return $film;
     }
 
     public function updateRating(int $id, int $newVote): Model
