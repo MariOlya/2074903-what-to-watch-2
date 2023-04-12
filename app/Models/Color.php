@@ -27,6 +27,8 @@ class Color extends Model
 
     public $timestamps = false;
 
+    public $fillable = ['color'];
+
     public function withBackgroundColorFilms(): HasMany
     {
         return $this->HasMany(Film::class, 'background_color_id');

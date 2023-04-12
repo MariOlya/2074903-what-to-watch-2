@@ -27,6 +27,8 @@ class Director extends Model
 
     public $timestamps = false;
 
+    public $fillable = ['name'];
+
     public function films(): HasMany
     {
         return $this->hasMany(Film::class);

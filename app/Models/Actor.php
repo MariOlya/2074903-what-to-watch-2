@@ -23,9 +23,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Actor extends Model
 {
+    use HasFactory;
+
     public $timestamps = false;
 
-    use HasFactory;
+    public $fillable = ['name'];
 
     public function films(): BelongsToMany
     {
