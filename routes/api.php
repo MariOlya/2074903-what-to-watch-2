@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->post('/films/{id}/favorite', [\App\Http\Contr
 Route::middleware('auth:sanctum')->delete('/films/{id}/favorite', [\App\Http\Controllers\FilmController::class, 'deleteFavoriteFilm']);
 Route::middleware('auth:sanctum')->post('/films', [\App\Http\Controllers\FilmController::class, 'addNewFilm']);
 Route::middleware('auth:sanctum')->patch('/films/{id}', [\App\Http\Controllers\FilmController::class, 'updateFilm']);
-Route::get('/films/{id}/comments', [\App\Http\Controllers\FilmController::class, 'getFilmComments']);
+Route::get('/films/{id}/comments', [\App\Http\Controllers\FilmController::class, 'getFilmReviews']);
 
 /** Actions with promo film */
 Route::get('/promo', [\App\Http\Controllers\PromoController::class, 'getPromoFilm']);
