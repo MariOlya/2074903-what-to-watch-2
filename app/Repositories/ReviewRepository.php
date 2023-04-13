@@ -52,11 +52,11 @@ class ReviewRepository implements ReviewRepositoryInterface
         int $offset = self::DEFAULT_OFFSET
     ): Collection {
         return Review::with([
-            'comments:id,text,created_at,review_id',
             'user:id,name'
         ])
             ->select($columns)
             ->where('film_id', '=', $filmId)
+            ->orderBy(Review::REVIEW_DEFAULT_ORDER_BY, Review::REVIEW_DEFAULT_ORDER_TO)
             ->limit($limit)
             ->offset($offset)
             ->get();

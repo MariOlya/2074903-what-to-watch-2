@@ -45,6 +45,9 @@ class Review extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const REVIEW_DEFAULT_ORDER_TO = 'desc';
+    public const REVIEW_DEFAULT_ORDER_BY = 'created_at';
+
     public $fillable = [
         'text',
         'rating',
