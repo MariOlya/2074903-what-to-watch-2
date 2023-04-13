@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $film_id
  * @property string $text
  * @property int $rating
+ * @property int $review_id
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $comments
  * @property-read \App\Models\Review $review
  * @property-read int|null $comments_count
