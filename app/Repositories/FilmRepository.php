@@ -204,7 +204,7 @@ class FilmRepository implements FilmRepositoryInterface
         }
     }
 
-    public function updateRating(int $id, int $newVote): Model
+    public function updateRating(int $id, int $newVote, int $latestVote = null): Model
     {
         /** @var Film $film */
         $film = Film::whereId($id)->first();
@@ -215,6 +215,13 @@ class FilmRepository implements FilmRepositoryInterface
 
         $currentRating = $film->rating;
         $currentVotesAmount = $film->vote_amount;
+
+        if ($latestVote) {
+            $newVotesAmount = --$currentVotesAmount;
+            $currentRating = ($currentRating * $currentVotesAmount - $latestVote) / $newVotesAmount;
+            $currentVotesAmount = $newVotesAmount;
+        }
+
         $newVotesAmount = ++$currentVotesAmount;
         $newRating = ($currentRating * $currentVotesAmount + $newVote) / $newVotesAmount;
 

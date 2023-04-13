@@ -10,7 +10,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 interface FilmRepositoryInterface extends BaseRepositoryInterface
 {
-    public function updateRating(int $id, int $newVote): Model;
+    public function updateRating(int $id, int $newVote, int $latestVote = null): Model;
 
     public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model;
 
