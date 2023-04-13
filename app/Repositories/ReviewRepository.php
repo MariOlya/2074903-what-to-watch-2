@@ -9,6 +9,7 @@ use App\Models\Review;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class ReviewRepository implements ReviewRepositoryInterface
 {
@@ -23,7 +24,22 @@ class ReviewRepository implements ReviewRepositoryInterface
 
     public function update(int $id, Dto $dto): Model
     {
-        // TODO: Implement update() method.
+        $review = Review::whereId($id)->firstOrFail();
+
+        $newText = $dto->getParams()['text'];
+        $newRating = $dto->getParams()['rating'] ?? null;
+
+        $review->text = $newText;
+
+        if ($newRating) {
+            $review->rating = $newRating;
+        }
+
+        if (!$review->save()) {
+            throw new InternalErrorException('The error on the server, please, try again', 500);
+        }
+
+        return $review;
     }
 
     public function delete(int $id): void
