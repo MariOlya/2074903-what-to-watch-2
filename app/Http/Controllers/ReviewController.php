@@ -13,8 +13,10 @@ use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
 use App\Models\Film;
+use App\Models\Review;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
+use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +25,8 @@ class ReviewController extends Controller
 {
     public function __construct(
         readonly ReviewFactoryInterface $reviewFactory,
-        readonly FilmRepositoryInterface $filmRepository
+        readonly FilmRepositoryInterface $filmRepository,
+        readonly ReviewRepositoryInterface $reviewRepository
     )
     {
     }
@@ -73,25 +76,47 @@ class ReviewController extends Controller
         );
     }
 
-    public function updateReview(Request $request, int $reviewId): BaseResponse
+    /**
+     * POLICY: User can change only own review, moderator can change any review
+     *
+     * @param ReviewRequest $request
+     * @param int $reviewId
+     * @return BaseResponse
+     */
+    public function updateReview(ReviewRequest $request, int $reviewId): BaseResponse
     {
-        //there will be check of this review, but we set now 'mock'
-        if (!$reviewId) {
+        /** @var Review $review */
+        $review = $request->findReview();
+
+        if (!$review) {
             return new NotFoundResponse();
         }
 
-        //there will be check that the user tried to do this with his/her review is logged, but we set now 'mock'
-        if ($reviewId === 1) {
-            return new UnauthorizedResponse();
+        $params = $request->validated();
+
+        $filmId = $review->film_id;
+        $latestVote = $review->rating ?? null;
+        $newVote = $params['rating'] ?? null;
+
+        //Change review + update rating
+        DB::beginTransaction();
+
+        try {
+            $updatedReview = $this->reviewRepository->update($reviewId, new ReviewDto($params));
+
+            if ($newVote) {
+                $this->filmRepository->updateRating($filmId, (int)$newVote, $latestVote);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
         }
 
-        //there will be check that the user tried to update any (not his/her) review is logged and moderator,
-        //but we set now 'mock'
-        if ($reviewId === 2) {
-            return new BadRequestResponse();
-        }
-
-        return new SuccessResponse();
+        return new SuccessResponse(
+            data: $updatedReview
+        );
     }
 
     public function deleteReview(int $reviewId): BaseResponse
