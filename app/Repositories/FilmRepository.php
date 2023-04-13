@@ -19,7 +19,6 @@ use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Services\FileService;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as DbCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -229,7 +228,7 @@ class FilmRepository implements FilmRepositoryInterface
 
     public function delete(int $id): void
     {
-        $film = Film::whereId($id);
+        $film = Film::whereId($id)->firstOrFail();
         $film->delete();
     }
 
@@ -260,12 +259,7 @@ class FilmRepository implements FilmRepositoryInterface
 
     public function paginateList(
         array $queryParams,
-        array $columns = [
-            'films.id as id',
-            'name',
-            'previewImage.link as preview_image',
-            'previewVideoLink.link as preview_video_link'
-        ]
+        array $columns = ['*']
     ): LengthAwarePaginator {
         $queryParams['limit'] = $queryParams['limit'] ?? self::DEFAULT_LIMIT;
         $queryParams['offset'] = $queryParams['offset'] ?? self::DEFAULT_OFFSET;
@@ -274,88 +268,79 @@ class FilmRepository implements FilmRepositoryInterface
         $queryParams['status'] = $queryParams['status'] ?? Film::FILM_DEFAULT_STATUS;
         $queryParams['order_by'] = $queryParams['order_by'] ?? Film::FILM_DEFAULT_ORDER_BY;
         $queryParams['order_to'] = $queryParams['order_to'] ?? Film::FILM_DEFAULT_ORDER_TO;
+        $queryParams['genre'] = $queryParams['genre'] ?? null;
 
-        $basedBuilder = Film::query()
-            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
-            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
-            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
-            ->where('film_statuses.status', '=', $queryParams['status']);
-
-        if (isset($queryParams['genre'])) {
-            $filmIds = array_map(
-                static fn ($film) => $film['id'],
-                Genre::whereGenre($queryParams['genre'])->first()?->films->toArray()
-            );
-
-            return $basedBuilder
-                ->whereIn('films.id', $filmIds)
-                ->orderBy($queryParams['order_by'], $queryParams['order_to'])
-                ->limit($queryParams['limit'])
-                ->offset($queryParams['offset'])
-                ->paginate(
-                    perPage: $queryParams['pageSize'],
-                    columns: $columns,
-                    page: $queryParams['page']
-                );
-        }
-
-        return $basedBuilder
+        return Film::query()
+            ->whereHas('status', static function($query) use ($queryParams) {
+                $query->where('status', '=', $queryParams['status']);
+            })
+            ->whereHas('genres', static function($query) use ($queryParams) {
+                if ($queryParams['genre']) {
+                    $query->where('genre', '=', $queryParams['genre']);
+                }
+            })
+            ->with([
+            'previewImage:id,link',
+            'previewVideoLink:id,link',
+            ])
+            ->select(['id', 'name', 'preview_image_id', 'preview_video_link_id', 'released'])
             ->orderBy($queryParams['order_by'], $queryParams['order_to'])
             ->limit($queryParams['limit'])
             ->offset($queryParams['offset'])
             ->paginate(
                 perPage: $queryParams['pageSize'],
-                columns: $columns,
                 page: $queryParams['page']
             );
     }
 
-    public function similarFilms(int $id, array $columns = [
-        'films.id as id',
-        'name',
-        'previewImage.link as preview_image',
-        'previewVideoLink.link as preview_video_link'
-    ]
-    ): ?DbCollection {
-        $genreIds = array_map(
-            static fn ($genre) => $genre['id'],
-            Film::whereId($id)->first()?->genres->toArray());
-
-        return DB::table('films')
-            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
-            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
-            ->join('film_genre', 'films.id', '=', 'film_genre.film_id')
-            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
-            ->whereIn('film_genre.genre_id', $genreIds)
-            ->whereNot('film_id', '=', $id)
-            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS)
-            ->limit(4)
-            ->get($columns);
-    }
-
-    public function favoriteFilms(int $userId, array $columns = [
-        'films.id as id',
-        'name',
-        'previewImage.link as preview_image',
-        'previewVideoLink.link as preview_video_link'
-    ]
-    ): LengthAwarePaginator {
-        $filmIds = array_map(
-            static fn ($film) => $film['id'],
-            User::whereId($userId)->first()?->favoriteFilms->toArray());
+    public function similarFilms(int $id, array $columns = ['*']): ?Collection
+    {
+        $genres = array_map(
+            static fn ($genre) => $genre['genre'],
+            Film::whereId($id)?->first()->genres->toArray()
+        );
 
         return Film::query()
-            ->leftJoin('files as previewImage', 'films.preview_image_id', '=', 'previewImage.id')
-            ->leftJoin('links as previewVideoLink', 'films.preview_video_link_id', '=', 'previewVideoLink.id')
-            ->join('film_statuses', 'films.status_id', '=', 'film_statuses.id')
+            ->whereHas('status', static function($query) {
+                $query->where('status', '=', Film::FILM_DEFAULT_STATUS);
+            })
+            ->whereHas('genres', static function($query) use ($genres) {
+                if ($genres) {
+                    $query->whereIn('genre', $genres);
+                }
+            })
+            ->with([
+                'previewImage:id,link',
+                'previewVideoLink:id,link',
+            ])
+            ->select(['id', 'name', 'preview_image_id', 'preview_video_link_id'])
+            ->whereNot('id', '=', $id)
+            ->limit(4)
+            ->get();
+    }
+
+    public function favoriteFilms(int $userId, array $columns = ['*']): LengthAwarePaginator
+    {
+        $filmIds = array_map(
+            static fn ($film) => $film['id'],
+            User::whereId($userId)->first()?->favoriteFilms->toArray()
+        );
+
+        return Film::query()
+            ->whereHas('status', static function($query) {
+                $query->where('status', '=', Film::FILM_DEFAULT_STATUS);
+            })
+            ->with([
+                'previewImage:id,link',
+                'previewVideoLink:id,link',
+            ])
+            ->select(['id', 'name', 'preview_image_id', 'preview_video_link_id'])
             ->whereIn('films.id', $filmIds)
-            ->where('film_statuses.status', '=', Film::FILM_DEFAULT_STATUS)
             ->orderBy(Film::FILM_DEFAULT_ORDER_BY, Film::FILM_DEFAULT_ORDER_TO)
             ->limit(self::DEFAULT_LIMIT)
             ->offset(self::DEFAULT_OFFSET)
             ->paginate(
                 perPage: self::DEFAULT_PAGE_SIZE,
-                columns: $columns,
                 page: self::DEFAULT_PAGE
             );
     }
