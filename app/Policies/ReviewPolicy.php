@@ -49,7 +49,11 @@ class ReviewPolicy
      */
     public function delete(User $user, Review $review): bool
     {
-        //
+        if ($user->userRole->role === User::MODERATOR_ROLE) {
+            return true;
+        }
+
+        return $user->id === $review->user_id;
     }
 
     /**
