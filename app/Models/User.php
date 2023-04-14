@@ -47,6 +47,7 @@ class User extends Authenticatable
 
     public const ROLE_DEFAULT = 'usual';
     public const MODERATOR_ROLE = 'moderator';
+    public const ADMIN_ROLE = 'admin';
 
     public $timestamps = false;
 

@@ -8,6 +8,15 @@ use Illuminate\Auth\Access\Response;
 
 class ReviewPolicy
 {
+    public function before(User $user, $ability): ?bool
+    {
+        if ($user->userRole->role === User::ADMIN_ROLE) {
+            return true;
+        }
+
+        return null;
+    }
+
     /**
      * Determine whether the user can update the model.
      */
