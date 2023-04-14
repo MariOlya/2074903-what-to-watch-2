@@ -21,7 +21,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int|null $avatar_id
  * @property int $user_role_id
  * @property-read \App\Models\File|null $avatar
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
  * @property-read int|null $comments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Film> $favoriteFilms
  * @property-read int|null $favorite_films_count
@@ -72,11 +71,6 @@ class User extends Authenticatable
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
-    }
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class);
     }
 
     public function favoriteFilms(): BelongsToMany

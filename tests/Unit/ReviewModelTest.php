@@ -21,7 +21,7 @@ class ReviewModelTest extends TestCase
 
     public function testGetDefaultUsernameFromAnonymousReview(): void
     {
-        $review = new Review();
+        $review = new Review;
         $review->film_id = Film::whereImdbId('tt4005402')->value('id');
         $review->text = 'Something wonderful';
         $review->rating = 8;
