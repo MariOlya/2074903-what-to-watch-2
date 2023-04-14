@@ -44,7 +44,8 @@ class ReviewRepository implements ReviewRepositoryInterface
 
     public function delete(int $id): void
     {
-        // TODO: Implement delete() method.
+        $review = Review::whereId($id)->firstOrFail();
+        $review->delete();
     }
 
     public function findById(int $id, array $columns = ['*']): ?Model
@@ -76,5 +77,14 @@ class ReviewRepository implements ReviewRepositoryInterface
             ->limit($limit)
             ->offset($offset)
             ->get();
+    }
+
+    public function deleteChildReviews(int $reviewId): void
+    {
+        $comments = Review::query()->where('review_id', '=', $reviewId)->get();
+
+        foreach ($comments as $comment) {
+            $comment->delete();
+        }
     }
 }

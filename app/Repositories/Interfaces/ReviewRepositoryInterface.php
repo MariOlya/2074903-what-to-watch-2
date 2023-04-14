@@ -14,4 +14,6 @@ interface ReviewRepositoryInterface extends BaseRepositoryInterface
         int $limit = self::DEFAULT_LIMIT,
         int $offset = self::DEFAULT_OFFSET
     ): Collection;
+
+    public function deleteChildReviews(int $reviewId): void;
 }
