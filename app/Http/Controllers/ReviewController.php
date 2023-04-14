@@ -17,6 +17,7 @@ use App\Models\Review;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -80,22 +81,25 @@ class ReviewController extends Controller
      * POLICY: User can change only own review, moderator can change any review
      *
      * @param ReviewRequest $request
-     * @param int $reviewId
+     * @param Review $currentReview
      * @return BaseResponse
+     * @throws \Exception
      */
-    public function updateReview(ReviewRequest $request, int $reviewId): BaseResponse
+    public function updateReview(ReviewRequest $request, Review $review): BaseResponse
     {
-        /** @var Review $review */
-        $review = $request->findReview();
+        /** @var Review $currentReview */
+        $currentReview = $request->findReview();
 
-        if (!$review) {
+        if (!$currentReview) {
             return new NotFoundResponse();
         }
 
         $params = $request->validated();
 
-        $filmId = $review->film_id;
-        $latestVote = $review->rating ?? null;
+        $reviewId = $currentReview->id;
+        $filmId = $currentReview->film_id;
+
+        $latestVote = $currentReview->rating ?? null;
         $newVote = $params['rating'] ?? null;
 
         //Change review + update rating
@@ -119,24 +123,43 @@ class ReviewController extends Controller
         );
     }
 
-    public function deleteReview(int $reviewId): BaseResponse
+    /**
+     * POLICY: User can delete only own review, moderator can delete any review
+     *
+     * @param Request $request
+     * @param Review $review
+     * @return BaseResponse
+     * @throws AuthorizationException
+     */
+    public function deleteReview(Request $request, Review $review): BaseResponse
     {
-        //there will be check of this review, but we set now 'mock'
-        if (!$reviewId) {
+        $this->authorize('delete', $review);
+
+        /** @var Review $currentReview */
+        $currentReview = Review::query()->find($request->route('comment'));
+
+        if (!$currentReview) {
             return new NotFoundResponse();
         }
 
-        //there will be check that the user tried to do this with his/her review is logged, but we set now 'mock'
-        if ($reviewId === 1) {
-            return new UnauthorizedResponse();
+        $reviewId = $currentReview->id;
+
+        //Soft delete review + all child comments
+        DB::beginTransaction();
+
+        try {
+            $this->reviewRepository->delete($reviewId);
+
+            $this->reviewRepository->deleteChildReviews($reviewId);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
         }
 
-        //there will be check that the user tried to delete any (not his/her) review is logged and moderator,
-        //but we set now 'mock'
-        if ($reviewId === 2) {
-            return new BadRequestResponse();
-        }
-
-        return new SuccessResponse();
+        return new SuccessResponse(
+            data: ['This review was deleted successfully']
+        );
     }
 }
