@@ -41,6 +41,9 @@ class FilmFactory extends Factory
             'tt0116581',
             'tt0120655',
             'tt0144117',
+            'tt0144517',
+            'tt0142317',
+            'tt0874117',
         ];
 
         return [

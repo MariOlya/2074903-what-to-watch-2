@@ -290,7 +290,7 @@ class FilmRepository implements FilmRepositoryInterface
             'previewImage:id,link',
             'previewVideoLink:id,link',
             ])
-            ->select(['id', 'name', 'preview_image_id', 'preview_video_link_id', 'released'])
+            ->select(['id', 'name', 'preview_image_id', 'preview_video_link_id', 'released', 'rating'])
             ->orderBy($queryParams['order_by'], $queryParams['order_to'])
             ->limit($queryParams['limit'])
             ->offset($queryParams['offset'])
