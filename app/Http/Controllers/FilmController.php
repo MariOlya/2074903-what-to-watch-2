@@ -20,6 +20,7 @@ use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class FilmController extends Controller
 {
@@ -126,6 +127,7 @@ class FilmController extends Controller
         $newFilm = $this->filmFactory->createNewFilm($imdbId);
 
         return new SuccessResponse(
+            codeResponse: Response::HTTP_CREATED,
             data: $newFilm
         );
     }
@@ -140,10 +142,6 @@ class FilmController extends Controller
     public function updateFilm(UpdatingFilmRequest $request, int $filmId): BaseResponse
     {
         $params = $request->validated();
-
-        if (!$request->findFilm()) {
-            return new NotFoundResponse();
-        }
 
         $updatedFilm = $this->filmRepository->update($filmId, new FilmDto($params));
 
