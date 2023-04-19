@@ -20,15 +20,15 @@ class GenreFactory extends Factory
     public function definition(): array
     {
         $genres = [
-            'Animation',
-            'Adventure',
-            'Drama',
-            'Crime',
-            'Mystery',
-            'Comedy',
-            'Family',
-            'Documentary',
-            'Romance',
+            'animation',
+            'adventure',
+            'drama',
+            'crime',
+            'mystery',
+            'comedy',
+            'family',
+            'documentary',
+            'romance',
         ];
 
         return [

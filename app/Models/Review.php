@@ -19,7 +19,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $film_id
  * @property string $text
  * @property int $rating
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Comment> $comments
+ * @property int $review_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Review> $comments
+ * @property-read \App\Models\Review $review
  * @property-read int|null $comments_count
  * @property-read \App\Models\Film $film
  * @property-read \App\Models\User|null $user
@@ -42,8 +44,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Review extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    public const REVIEW_DEFAULT_ORDER_TO = 'desc';
+    public const REVIEW_DEFAULT_ORDER_BY = 'created_at';
+
+    public $fillable = [
+        'text',
+        'rating',
+        'review_id',
+        'user_id',
+        'film_id'
+    ];
 
     public function user(): BelongsTo
     {
@@ -59,6 +71,11 @@ class Review extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(__CLASS__);
+    }
+
+    public function review(): BelongsTo
+    {
+        return $this->belongsTo(__CLASS__);
     }
 }

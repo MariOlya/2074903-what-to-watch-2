@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Factories\FilmImageFactory;
+use App\Factories\LinkFactory;
 use App\Models\Film;
 use App\Models\FilmStatus;
 use App\Repositories\FilmRepository;
@@ -14,7 +16,7 @@ class FilmRepositoryTest extends TestCase
 
     public function testUpdateFilmRating(): void
     {
-        $film = new Film();
+        $film = new Film;
         $film->imdb_id = 'tt0465774';
         $film->rating = 6.5;
         $film->vote_amount = 2338;
@@ -24,7 +26,10 @@ class FilmRepositoryTest extends TestCase
         $filmId = $film->id;
         $filmUpdated = $film->updated_at;
 
-        $repository = new FilmRepository();
+        $filmFileFactory = $this->createMock(FilmImageFactory::class);
+        $linkFactory = $this->createMock(LinkFactory::class);
+
+        $repository = new FilmRepository($filmFileFactory, $linkFactory);
 
         /** @var Film $firstUpdate */
         $firstUpdate = $repository->updateRating($filmId, 10);

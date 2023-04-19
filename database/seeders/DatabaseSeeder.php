@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             ActorFilmSeeder::class,
             FilmGenreSeeder::class,
             ReviewSeeder::class,
-            CommentSeeder::class,
         ]);
     }
 }

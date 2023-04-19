@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\Rules\Password;
 
-class UserRegisterRequest extends FormRequest
+class UserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

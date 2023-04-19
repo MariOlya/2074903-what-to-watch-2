@@ -43,11 +43,12 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->renderable(static function (\Throwable $e) {
-            if ($e instanceof \Error) {
-                return new ServerErrorResponse();
-            }
+        $this->renderable(static function (\Exception $e) {
             return new BaseFailResponse(exception: $e);
+        });
+
+        $this->renderable(static function (\Error $e) {
+            return new ServerErrorResponse();
         });
     }
 }

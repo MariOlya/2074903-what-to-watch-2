@@ -33,6 +33,8 @@ class Link extends Model
 
     public $timestamps = false;
 
+    public $fillable = ['link', 'link_type_id'];
+
     public function type(): BelongsTo
     {
         return $this->belongsTo(LinkType::class);

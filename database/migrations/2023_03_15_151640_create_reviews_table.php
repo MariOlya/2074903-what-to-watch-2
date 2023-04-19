@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\User::class)->nullable()->constrained();
             $table->foreignIdFor(\App\Models\Film::class)->constrained()->cascadeOnDelete();
             $table->text('text');
-            $table->integer('rating');
+            $table->integer('rating')->nullable();
+            $table->foreignIdFor(\App\Models\Review::class)->nullable()->constrained()->cascadeOnDelete();
         });
     }
 

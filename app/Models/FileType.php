@@ -24,6 +24,11 @@ class FileType extends Model
 {
     use HasFactory;
 
+    public const AVATAR_TYPE = 'avatar';
+    public const POSTER_TYPE = 'poster';
+    public const PREVIEW_TYPE = 'preview';
+    public const BACKGROUND_TYPE = 'background';
+
     public $timestamps = false;
 
     public function files(): HasMany

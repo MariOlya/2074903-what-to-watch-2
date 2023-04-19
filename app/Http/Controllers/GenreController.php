@@ -4,26 +4,56 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GenreRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
+use App\Models\Genre;
+use App\Repositories\Interfaces\GenreRepositoryInterface;
 use Illuminate\Http\Request;
 
 class GenreController extends Controller
 {
-    public function getGenres(): BaseResponse
+    public function __construct(
+        readonly GenreRepositoryInterface $genreRepository,
+    )
     {
-        //
-        return new SuccessResponse();
     }
 
-    public function updateGenre(Request $request, int $genreId): BaseResponse
+    /**
+     * POLICY: No policy, technical endpoint
+     *
+     * @return BaseResponse
+     */
+    public function getGenres(): BaseResponse
     {
-        //there will be check that the user tried to do this is logged and moderator, but we set now 'mock'
-        try {
-            return new SuccessResponse();
-        } catch (\Throwable) {
-            return new UnauthorizedResponse();
-        }
+        $genres = $this->genreRepository->all();
+
+        return new SuccessResponse(
+            data: [
+                'genres' => $genres,
+            ]
+        );
+    }
+
+    /**
+     * POLICY: Only auth user + only moderator (rules in GenrePolicy and GenreRequest)
+     *
+     * @param GenreRequest $request
+     * @param Genre $genre
+     * @return BaseResponse
+     */
+    public function updateGenre(GenreRequest $request, Genre $genre): BaseResponse
+    {
+        $validated = $request->validated();
+        $genreId = $genre->id;
+
+        $updatedGenre = $this->genreRepository->update($genreId, $validated['genre']);
+
+        return new SuccessResponse(
+            data: [
+                'updatedGenre' => $updatedGenre,
+            ]
+        );
     }
 }

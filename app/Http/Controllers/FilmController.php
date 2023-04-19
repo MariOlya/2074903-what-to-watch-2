@@ -4,26 +4,42 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Factories\Dto\FilmDto;
+use App\Factories\Interfaces\FilmFactoryInterface;
+use App\Http\Requests\NewFilmRequest;
+use App\Http\Requests\UpdatingFilmRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
 use App\Http\Responses\UnprocessableResponse;
 use App\Models\Film;
+use App\Models\FilmStatus;
 use App\Models\User;
-use App\Repositories\FilmRepository;
+use App\Repositories\Interfaces\FilmRepositoryInterface;
+use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class FilmController extends Controller
 {
     public function __construct(
-        readonly FilmRepository $filmRepository
+        readonly FilmRepositoryInterface $filmRepository,
+        readonly FilmFactoryInterface $filmFactory,
+        readonly ReviewRepositoryInterface $reviewRepository
     )
     {
     }
 
-    public function getFilmInfo(int $filmId): BaseResponse
+    /**
+     * POLICY: For user we need to add isFavorite
+     *
+     * @param Request $request
+     * @param int $filmId
+     * @return BaseResponse
+     */
+    public function getFilmInfo(Request $request, int $filmId): BaseResponse
     {
         $film = $this->filmRepository->findById($filmId);
 
@@ -31,11 +47,11 @@ class FilmController extends Controller
             return new NotFoundResponse();
         }
 
-        /** @var User $user */
-        $user = Auth::user();
+        /** @var User $currentUser */
+        $currentUser = $request->user('sanctum');
 
-        if ($user) {
-            $isFavorite = (bool)$user->favoriteFilms()->where('id', '=', $filmId)->first('id');
+        if ($currentUser) {
+            $isFavorite = (bool)$currentUser->favoriteFilms()->where('film_id', '=', $filmId)->first();
             $film = $film->toArray();
             $film['is_favorite'] = $isFavorite;
         }
@@ -43,77 +59,115 @@ class FilmController extends Controller
         return new SuccessResponse(data: $film);
     }
 
-    public function addFavoriteFilm(Request $request, int $filmId): BaseResponse
+    /**
+     * POLICY: Only for user
+     *
+     * @param int $filmId
+     * @return BaseResponse
+     */
+    public function addFavoriteFilm(int $filmId): BaseResponse
     {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
+        $film = $this->filmRepository->findById($filmId);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$film) {
             return new NotFoundResponse();
         }
 
-        //there will be check that the film isn't in favorite already, but we set now 'mock'
-        if ($filmId === 1) {
+        if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() !== null) {
             return new UnprocessableResponse();
         }
 
-        //there will be check that the user tried to do this is logged, but we set now 'mock'
-        if ($filmId === 2) {
-            return new UnauthorizedResponse();
-        }
+        $user->favoriteFilms()->attach($filmId);
 
-        return new SuccessResponse();
+        return new SuccessResponse(
+            data: $film
+        );
     }
 
+    /**
+     * POLICY: Only for user
+     *
+     * @param int $filmId
+     * @return BaseResponse
+     */
     public function deleteFavoriteFilm(int $filmId): BaseResponse
     {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
+        $film = $this->filmRepository->findById($filmId);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$film) {
             return new NotFoundResponse();
         }
 
-        //there will be check that the film is in favorite now, but we set now 'mock'
-        if ($filmId === 1) {
+        if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() === null) {
             return new UnprocessableResponse();
         }
 
-        //there will be check that the user tried to do this is logged, but we set now 'mock'
-        if ($filmId === 2) {
-            return new UnauthorizedResponse();
-        }
+        $user->favoriteFilms()->detach($filmId);
 
-        return new SuccessResponse();
+        return new SuccessResponse(
+            data: ['This film was deleted from your favorite list']
+        );
     }
 
-    public function addNewFilm(Request $request): BaseResponse
+    /**
+     * POLICY: Only for moderator
+     *
+     * @param NewFilmRequest $request
+     * @return BaseResponse
+     */
+    public function addNewFilm(NewFilmRequest $request): BaseResponse
     {
-        //there will be check that the new id is not in db already, but we set now 'mock'
-        try {
-            return new SuccessResponse();
-        } catch (\Throwable) {
-            return new UnprocessableResponse();
-        }
+        $imdbId = $request->validated()['imdb_id'];
+        $newFilm = $this->filmFactory->createNewFilm($imdbId);
+
+        return new SuccessResponse(
+            codeResponse: Response::HTTP_CREATED,
+            data: $newFilm
+        );
     }
 
-    public function updateFilm(Request $request, int $filmId): BaseResponse
+    /**
+     * POLICY: Only for moderator
+     *
+     * @param UpdatingFilmRequest $request
+     * @param int $filmId
+     * @return BaseResponse
+     */
+    public function updateFilm(UpdatingFilmRequest $request, int $filmId): BaseResponse
     {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
+        $params = $request->validated();
+
+        $updatedFilm = $this->filmRepository->update($filmId, new FilmDto($params));
+
+        return new SuccessResponse(
+            data: $updatedFilm
+        );
+    }
+
+    /**
+     * POLICY: Available for all
+     *
+     * @param int $filmId
+     * @return BaseResponse
+     */
+    public function getFilmReviews(int $filmId): BaseResponse
+    {
+        $film = Film::whereId($filmId)->first();
+
+        if (!$film) {
             return new NotFoundResponse();
         }
 
-        //there will be check that the user tried to do this is logged and moderator, but we set now 'mock'
-        if ($filmId === 2) {
-            return new UnauthorizedResponse();
-        }
+        $reviews = $this->reviewRepository->allForFilm($filmId);
 
-        return new SuccessResponse();
-    }
-
-    public function getFilmComments(int $filmId): BaseResponse
-    {
-        //there will be check of this film, but we set now 'mock'
-        if (!$filmId) {
-            return new NotFoundResponse();
-        }
-        return new SuccessResponse();
+        return new SuccessResponse(
+            data: $reviews
+        );
     }
 }

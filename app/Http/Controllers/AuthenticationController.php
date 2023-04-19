@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\UserLoginRequest;
+use App\Http\Requests\LoginRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NoContentResponse;
 use App\Http\Responses\SuccessResponse;
@@ -16,7 +16,7 @@ use Illuminate\Validation\UnauthorizedException;
 
 class AuthenticationController extends Controller
 {
-    public function login(UserLoginRequest $request): BaseResponse
+    public function login(LoginRequest $request): BaseResponse
     {
         try {
             if (!Auth::attempt($request->validated())) {
