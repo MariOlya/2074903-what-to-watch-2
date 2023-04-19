@@ -16,16 +16,14 @@ class ReviewModelTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        (new DatabaseSeeder())->call(TestDatabaseSeeder::class);
+        $this->artisan('db:seed');
     }
 
     public function testGetDefaultUsernameFromAnonymousReview(): void
     {
-        $review = new Review;
-        $review->film_id = Film::whereImdbId('tt4005402')->value('id');
-        $review->text = 'Something wonderful';
-        $review->rating = 8;
-        $review->save();
+        $review = Review::factory()->create([
+            'film_id' => 1
+        ]);
 
         $anonymousUsername = $review->user->name;
 
