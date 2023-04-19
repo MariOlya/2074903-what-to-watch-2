@@ -42,12 +42,6 @@ class ReviewController extends Controller
      */
     public function addNewReview(ReviewRequest $request, int $filmId): BaseResponse
     {
-        $film = Film::whereId($filmId)->first();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         $params = $request->validated();
         $newVote = $params['rating'] ?? null;
 
@@ -81,7 +75,7 @@ class ReviewController extends Controller
      * POLICY: User can change only own review, moderator can change any review
      *
      * @param ReviewRequest $request
-     * @param Review $currentReview
+     * @param Review $review
      * @return BaseResponse
      * @throws \Exception
      */
@@ -89,10 +83,6 @@ class ReviewController extends Controller
     {
         /** @var Review $currentReview */
         $currentReview = $request->findReview();
-
-        if (!$currentReview) {
-            return new NotFoundResponse();
-        }
 
         $params = $request->validated();
 
@@ -133,14 +123,14 @@ class ReviewController extends Controller
      */
     public function deleteReview(Request $request, Review $review): BaseResponse
     {
-        $this->authorize('delete', $review);
-
         /** @var Review $currentReview */
         $currentReview = Review::query()->find($request->route('comment'));
 
         if (!$currentReview) {
             return new NotFoundResponse();
         }
+
+        $this->authorize('delete', $currentReview);
 
         $reviewId = $currentReview->id;
 

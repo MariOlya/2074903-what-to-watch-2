@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Api\FormRequest;
 use App\Models\Review;
+use Illuminate\Validation\Rule;
 
 class ReviewRequest extends FormRequest
 {
@@ -38,7 +39,13 @@ class ReviewRequest extends FormRequest
                 'integer',
                 'between:1,10'
             ],
-            'comment_id' => 'integer'
+            'comment_id' => [
+                'integer',
+                Rule::in(array_map(
+                    static fn ($review) => $review['id'],
+                    Review::all('id')->toArray()
+                ))
+            ],
         ];
     }
 
