@@ -60,10 +60,6 @@ class FilmsController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user) {
-            return new UnauthorizedResponse();
-        }
-
         $userId = $user->id;
 
         $paginatedFavoriteFilms = $this->filmRepository->favoriteFilms($userId);

@@ -60,10 +60,6 @@ class UserController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user) {
-            return new UnauthorizedResponse();
-        }
-
         $avatar = $user->avatar;
 
         return new SuccessResponse(
@@ -84,10 +80,6 @@ class UserController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-
-        if (!$user) {
-            return new UnauthorizedResponse();
-        }
 
         $userId = $user->id;
         $params = $request->safe()->except('file');
