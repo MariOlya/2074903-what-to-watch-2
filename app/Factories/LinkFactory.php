@@ -6,6 +6,7 @@ use App\Factories\Interfaces\LinkFactoryInterface;
 use App\Models\Link;
 use App\Models\LinkType;
 use Symfony\Component\CssSelector\Exception\InternalErrorException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class LinkFactory implements LinkFactoryInterface
 {
@@ -21,6 +22,15 @@ class LinkFactory implements LinkFactoryInterface
      */
     public function createNewLink(string $link, string $type): int
     {
+        $linkType = LinkType::whereType($type)->first();
+
+        if (!$linkType) {
+            throw new NotFoundHttpException(
+                message: 'This file type is not found',
+                code: 404
+            );
+        }
+
         $this->link->link = $link;
         $this->link->link_type_id = LinkType::whereType($type)->value('id');
 

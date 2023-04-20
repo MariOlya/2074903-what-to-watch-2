@@ -10,6 +10,7 @@ use App\Models\FileType;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\CssSelector\Exception\InternalErrorException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FilmImageFactory implements FilmFileFactoryInterface
 {
@@ -38,6 +39,14 @@ class FilmImageFactory implements FilmFileFactoryInterface
     public function createFromEditForm(string $link, string $type): int
     {
         $file = substr($link, 4);
+        $fileType = FileType::whereType($type)->first();
+
+        if (!$fileType) {
+            throw new NotFoundHttpException(
+                message: 'This file type is not found',
+                code: 404
+            );
+        }
 
         if (Storage::disk('public')->missing('/images/'.$file)) {
              throw new BadRequestException(

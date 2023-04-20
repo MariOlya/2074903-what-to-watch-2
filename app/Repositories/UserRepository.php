@@ -14,7 +14,7 @@ class UserRepository implements UserRepositoryInterface
 {
     public function update(int $id, UserDto $dto): Model
     {
-        $updatedUser = User::query()->find($id);
+        $updatedUser = User::whereId($id)->firstOrFail();
 
         $newName = $dto->getParams()['name'] ?? null;
         $newPassword = $dto->getParams()['password'] ?? null;

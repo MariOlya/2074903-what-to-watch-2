@@ -19,7 +19,7 @@ interface BaseRepositoryInterface
 
     public function delete(int $id): void;
 
-    public function findById(int $id, array $columns = ['*']): ?Model;
+    public function findById(int $id, array $columns = ['*']): Model;
 
-    public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model;
+    public function findBy(string $field, mixed $value, array $columns = ['*']): Model;
 }

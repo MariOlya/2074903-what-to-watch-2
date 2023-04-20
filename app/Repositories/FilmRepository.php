@@ -239,7 +239,7 @@ class FilmRepository implements FilmRepositoryInterface
         $film->delete();
     }
 
-    public function findById(int $id, array $columns = ['*']): ?Model
+    public function findById(int $id, array $columns = ['*']): Model
     {
         return Film::with([
             'posterImage',
@@ -251,7 +251,7 @@ class FilmRepository implements FilmRepositoryInterface
             'director',
             'actors',
             'genres'
-        ])->find($id, $columns);
+        ])->where('id', '=', $id)->firstOrFail($columns);
     }
 
     public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model
@@ -259,9 +259,9 @@ class FilmRepository implements FilmRepositoryInterface
         return $this->findBy('imdb_id', $imdbId, $columns);
     }
 
-    public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model
+    public function findBy(string $field, mixed $value, array $columns = ['*']): Model
     {
-        return Film::query()->where($field, '=', $value)->first($columns);
+        return Film::query()->where($field, '=', $value)->firstOrFail($columns);
     }
 
     public function paginateList(
@@ -330,7 +330,7 @@ class FilmRepository implements FilmRepositoryInterface
     {
         $filmIds = array_map(
             static fn ($film) => $film['id'],
-            User::whereId($userId)->first()?->favoriteFilms->toArray()
+            User::whereId($userId)->firstOrFail()->favoriteFilms->toArray()
         );
 
         return Film::query()

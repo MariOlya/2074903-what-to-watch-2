@@ -22,6 +22,12 @@ class ReviewRepository implements ReviewRepositoryInterface
 
     }
 
+    /**
+     * @param int $id
+     * @param Dto $dto
+     * @return Model
+     * @throws InternalErrorException
+     */
     public function update(int $id, Dto $dto): Model
     {
         $review = Review::whereId($id)->firstOrFail();
@@ -48,18 +54,16 @@ class ReviewRepository implements ReviewRepositoryInterface
         $review->delete();
     }
 
-    public function findById(int $id, array $columns = ['*']): ?Model
+    public function findById(int $id, array $columns = ['*']): Model
     {
-        return Review::with([
-            'comments',
-        ])->find($id, $columns);
+        return $this->findBy('id', $id, $columns);
     }
 
-    public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model
+    public function findBy(string $field, mixed $value, array $columns = ['*']): Model
     {
         return Review::with([
             'comments',
-        ])->where($field, '=', $value)->first($columns);
+        ])->where($field, '=', $value)->firstOrFail($columns);
     }
 
     public function allForFilm(
