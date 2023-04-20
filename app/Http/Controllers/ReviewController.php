@@ -7,12 +7,8 @@ namespace App\Http\Controllers;
 use App\Factories\Dto\ReviewDto;
 use App\Factories\Interfaces\ReviewFactoryInterface;
 use App\Http\Requests\ReviewRequest;
-use App\Http\Responses\BadRequestResponse;
 use App\Http\Responses\BaseResponse;
-use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
-use App\Models\Film;
 use App\Models\Review;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
@@ -81,15 +77,12 @@ class ReviewController extends Controller
      */
     public function updateReview(ReviewRequest $request, Review $review): BaseResponse
     {
-        /** @var Review $currentReview */
-        $currentReview = $request->findReview();
-
         $params = $request->validated();
 
-        $reviewId = $currentReview->id;
-        $filmId = $currentReview->film_id;
+        $reviewId = $review->id;
+        $filmId = $review->film_id;
 
-        $latestVote = $currentReview->rating ?? null;
+        $latestVote = $review->rating ?? null;
         $newVote = $params['rating'] ?? null;
 
         //Change review + update rating
@@ -124,16 +117,9 @@ class ReviewController extends Controller
      */
     public function deleteReview(Request $request, Review $review): BaseResponse
     {
-        /** @var Review $currentReview */
-        $currentReview = Review::query()->find($request->route('comment'));
+        $this->authorize('delete', $review);
 
-        if (!$currentReview) {
-            return new NotFoundResponse();
-        }
-
-        $this->authorize('delete', $currentReview);
-
-        $reviewId = $currentReview->id;
+        $reviewId = $review->id;
 
         //Soft delete review + all child comments
         DB::beginTransaction();

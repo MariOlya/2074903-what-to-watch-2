@@ -46,5 +46,5 @@ Route::middleware('auth:sanctum')->patch('/genres/{genre}', [\App\Http\Controlle
 
 /** Actions with review */
 Route::middleware('auth:sanctum')->post('/films/{id}/comments', [\App\Http\Controllers\ReviewController::class, 'addNewReview']);
-Route::middleware('auth:sanctum')->patch('/comments/{comment}', [\App\Http\Controllers\ReviewController::class, 'updateReview']);
-Route::middleware('auth:sanctum')->delete('/comments/{comment}', [\App\Http\Controllers\ReviewController::class, 'deleteReview']);
+Route::middleware('auth:sanctum')->patch('/comments/{review}', [\App\Http\Controllers\ReviewController::class, 'updateReview']);
+Route::middleware('auth:sanctum')->delete('/comments/{review}', [\App\Http\Controllers\ReviewController::class, 'deleteReview']);

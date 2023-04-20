@@ -9,12 +9,8 @@ use App\Factories\Interfaces\FilmFactoryInterface;
 use App\Http\Requests\NewFilmRequest;
 use App\Http\Requests\UpdatingFilmRequest;
 use App\Http\Responses\BaseResponse;
-use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
 use App\Http\Responses\UnprocessableResponse;
-use App\Models\Film;
-use App\Models\FilmStatus;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
@@ -146,6 +142,8 @@ class FilmController extends Controller
      */
     public function getFilmReviews(int $filmId): BaseResponse
     {
+        $this->filmRepository->findById($filmId);
+
         $reviews = $this->reviewRepository->allForFilm($filmId);
 
         return new SuccessResponse(

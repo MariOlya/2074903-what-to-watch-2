@@ -238,7 +238,7 @@ class ReviewControllerTest extends TestCase
                 'text' => 'Something interesting writes here about some film. Great!',
                 'rating' => 8
             ])
-            ->assertStatus(Response::HTTP_BAD_REQUEST)
+            ->assertStatus(Response::HTTP_NOT_FOUND)
             ->assertJsonStructure([
                 'message'
             ]);

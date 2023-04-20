@@ -10,15 +10,10 @@ use Illuminate\Validation\Rule;
 
 class ReviewRequest extends FormRequest
 {
-    public function findReview(): ?Review
-    {
-        return Review::query()->find($this->route('comment'));
-    }
-
     public function authorize(): bool
     {
         if ($this->isMethod('patch')) {
-            $review = $this->findReview();
+            $review = $this->route('review');
             return $this->user()->can('update', $review);
         }
 
