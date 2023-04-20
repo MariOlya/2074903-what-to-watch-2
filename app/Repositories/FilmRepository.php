@@ -304,7 +304,7 @@ class FilmRepository implements FilmRepositoryInterface
     {
         $genres = array_map(
             static fn ($genre) => $genre['genre'],
-            Film::whereId($id)?->first()->genres->toArray()
+            Film::whereId($id)->firstOrFail()->genres->toArray()
         );
 
         return Film::query()

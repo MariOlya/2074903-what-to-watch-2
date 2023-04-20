@@ -80,12 +80,6 @@ class FilmsController extends Controller
      */
     public function getSimilarFilms(int $filmId): BaseResponse
     {
-        $film = Film::whereId($filmId)->first();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         $films = $this->filmRepository->similarFilms($filmId);
 
         return new SuccessResponse(data: $films);

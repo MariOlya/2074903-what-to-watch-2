@@ -120,6 +120,7 @@ class ReviewController extends Controller
      * @param Review $review
      * @return BaseResponse
      * @throws AuthorizationException
+     * @throws \Exception
      */
     public function deleteReview(Request $request, Review $review): BaseResponse
     {

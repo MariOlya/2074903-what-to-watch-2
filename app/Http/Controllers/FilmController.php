@@ -43,10 +43,6 @@ class FilmController extends Controller
     {
         $film = $this->filmRepository->findById($filmId);
 
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         /** @var User $currentUser */
         $currentUser = $request->user('sanctum');
 
@@ -72,10 +68,6 @@ class FilmController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() !== null) {
             return new UnprocessableResponse();
         }
@@ -99,10 +91,6 @@ class FilmController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
 
         if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() === null) {
             return new UnprocessableResponse();
@@ -158,12 +146,6 @@ class FilmController extends Controller
      */
     public function getFilmReviews(int $filmId): BaseResponse
     {
-        $film = Film::whereId($filmId)->first();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         $reviews = $this->reviewRepository->allForFilm($filmId);
 
         return new SuccessResponse(

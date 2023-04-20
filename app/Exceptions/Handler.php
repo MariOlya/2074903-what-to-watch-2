@@ -3,8 +3,13 @@
 namespace App\Exceptions;
 
 use App\Http\Responses\BaseFailResponse;
+use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\ServerErrorResponse;
+use App\Http\Responses\UnauthorizedResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,12 +48,20 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->renderable(static function (\Exception $e) {
-            return new BaseFailResponse(exception: $e);
-        });
+        $this->renderable(
+            static fn (NotFoundHttpException|ModelNotFoundException $e) => new NotFoundResponse()
+        );
 
-        $this->renderable(static function (\Error $e) {
-            return new ServerErrorResponse();
-        });
+        $this->renderable(
+            static fn (AuthorizationException $e) => new UnauthorizedResponse()
+        );
+
+        $this->renderable(
+            static fn (\Exception $e) => new BaseFailResponse(exception: $e)
+        );
+
+        $this->renderable(
+            static fn (\Error $e) => new ServerErrorResponse()
+        );
     }
 }
