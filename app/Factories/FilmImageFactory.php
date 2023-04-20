@@ -17,9 +17,16 @@ class FilmImageFactory implements FilmFileFactoryInterface
     {
     }
 
+    /**
+     * @param string $link
+     * @param string $type
+     * @return int
+     * @throws InternalErrorException
+     */
     public function createFromExternalApi(string $link, string $type): int
     {
         // TODO: Implement createFromExternalApi() method.
+        throw new InternalErrorException('This method is not available now', 500);
     }
 
     /**
