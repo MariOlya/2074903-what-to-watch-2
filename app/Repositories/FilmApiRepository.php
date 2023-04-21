@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Custom;
+namespace App\Repositories;
 
+use App\Repositories\Interfaces\FilmApiRepositoryInterface;
+use App\Services\Interfaces\ApiHandlerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 
-class OmdbMovieInfoRepository implements MovieInfoRepository, ApiHandlerInterface
+class FilmApiRepository implements FilmApiRepositoryInterface, ApiHandlerInterface
 {
     protected string $host = 'https://www.omdbapi.com';
     protected ClientInterface $client;

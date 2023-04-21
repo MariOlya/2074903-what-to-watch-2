@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Custom;
+namespace App\Services\Interfaces;
 
 interface ApiHandlerInterface
 {
