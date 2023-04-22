@@ -6,7 +6,7 @@ namespace App\Factories\Interfaces;
 
 interface FilmFileFactoryInterface
 {
-    public function createFromExternalApi(string $link, string $type): int;
+    public function createFromExternalApi(string $link, string $type, string $title): int;
 
     public function createFromEditForm(string $link, string $type): int;
 }
