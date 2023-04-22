@@ -254,7 +254,7 @@ class FilmRepository implements FilmRepositoryInterface
         ])->where('id', '=', $id)->firstOrFail($columns);
     }
 
-    public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model
+    public function findByImdbId(string $imdbId, array $columns = ['*']): Model
     {
         return $this->findBy('imdb_id', $imdbId, $columns);
     }
@@ -350,5 +350,82 @@ class FilmRepository implements FilmRepositoryInterface
                 perPage: self::DEFAULT_PAGE_SIZE,
                 page: self::DEFAULT_PAGE
             );
+    }
+
+    /**
+     * @param string $imdbId
+     * @param Dto $dto
+     * @return Model
+     * @throws \Exception
+     */
+    public function fillFilmInfo(string $imdbId, Dto $dto): Model
+    {
+        /** @var Film $updatedFilm */
+        $updatedFilm = $this->findByImdbId($imdbId);
+
+        DB::beginTransaction();
+
+        try {
+            $posterId = $this->imageFactory->createFromExternalApi(
+                $dto->getParams()['Poster'],
+                FileType::POSTER_TYPE,
+                $dto->getParams()['Title']
+            );
+
+            $previewId = $this->imageFactory->createFromExternalApi(
+                $dto->getParams()['Poster'],
+                FileType::PREVIEW_TYPE,
+                $dto->getParams()['Title']
+            );
+
+            $releasedYear = substr($dto->getParams()['Released'], -4, 4);
+
+            $directorId = Director::query()->firstOrCreate([
+                'name' => $dto->getParams()['Director']
+            ])->id;
+
+            $runtime = substr($dto->getParams()['Runtime'], 0, -4);
+
+            $genres = explode(', ', $dto->getParams()['Genre']);
+            $newGenreIds = [];
+            foreach ($genres as $newGenre) {
+                $genre = Genre::query()->firstOrCreate([
+                    'genre' => $newGenre
+                ]);
+                $newGenreIds[] = $genre->id;
+            }
+
+            $actors = explode(', ', $dto->getParams()['Actors']);
+            $newActorIds = [];
+            foreach ($actors as $newActor) {
+                $actor = Actor::query()->firstOrCreate([
+                    'name' => $newActor
+                ]);
+                $newActorIds[] = $actor->id;
+            }
+
+            $updatedFilm->poster_image_id = $posterId;
+            $updatedFilm->preview_image_id = $previewId;
+            $updatedFilm->name = $dto->getParams()['Title'];
+            $updatedFilm->released = (int)$releasedYear;
+            $updatedFilm->description = $dto->getParams()['Plot'];
+            $updatedFilm->director_id = $directorId;
+            $updatedFilm->run_time = (int)$runtime;
+            $updatedFilm->rating = (float)$dto->getParams()['imdbRating'];
+            $updatedFilm->vote_amount = (int)str_replace(',', '', $dto->getParams()['imdbVotes']);
+            $updatedFilm->status_id = FilmStatus::whereStatus(Film::MODERATE_FILM_STATUS)->value('id');
+
+            $updatedFilm->save();
+
+            $updatedFilm->genres()->sync($newGenreIds);
+            $updatedFilm->actors()->sync($newActorIds);
+
+            DB::commit();
+
+            return $updatedFilm;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 }
