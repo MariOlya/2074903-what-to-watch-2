@@ -13,7 +13,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class ParseFilmInfo implements ShouldQueue
 {
@@ -26,19 +25,20 @@ class ParseFilmInfo implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        readonly FilmApiRepositoryInterface $apiRepository,
         readonly string $imdbId,
-        readonly FilmRepositoryInterface $filmRepository,
-    )
-    {
+
+    ) {
     }
 
     /**
      * Execute the job.
+     * @throws Exception
      */
-    public function handle(): void
-    {
-        $response = $this->apiRepository->getMovieInfoById($this->imdbId);
+    public function handle(
+        FilmApiRepositoryInterface $apiRepository,
+        FilmRepositoryInterface $filmRepository,
+    ): void {
+        $response = $apiRepository->getMovieInfoById($this->imdbId);
 
         if ($response['code'] !== 200) {
             throw new \RuntimeException(
@@ -49,7 +49,7 @@ class ParseFilmInfo implements ShouldQueue
 
         $filmInfo = (array)$response['data'];
 
-        $this->filmRepository->fillFilmInfo($this->imdbId, new FilmApiDto($filmInfo));
+        $filmRepository->fillFilmInfo($this->imdbId, new FilmApiDto($filmInfo));
     }
 
     /**
@@ -59,7 +59,7 @@ class ParseFilmInfo implements ShouldQueue
     public function failed(Exception $exception): void
     {
         Log::warning(
-            'Your job to fill film ('.$this->imdbId.') info did not work. There is exception: '.$exception
+            'Your job to fill film ('.$this->imdbId.') info did not work. There is exception: '.$exception->getMessage()
         );
     }
 }
