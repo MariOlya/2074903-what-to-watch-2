@@ -41,13 +41,6 @@ class FilmImageFactory implements FilmFileFactoryInterface
 
         $fileName = $this->service->addFileToStorage($link, $title, $type);
 
-//        $fileUpload = file_get_contents($link);
-//        $fileName = implode('-', explode(' ', strtolower($title))).'-'.$type;
-//
-//        $path = Storage::disk(FileService::PUBLIC_STORAGE)->putFileAs(
-//            'images', $fileUpload, $fileName
-//        );
-
         $this->file->link = $fileName;
         $this->file->file_type_id = $fileType->id;
 
@@ -66,7 +59,7 @@ class FilmImageFactory implements FilmFileFactoryInterface
      */
     public function createFromEditForm(string $link, string $type): int
     {
-        $file = substr($link, 3);
+        $file = substr($link, 4);
         $fileType = FileType::whereType($type)->first();
 
         if (!$fileType) {
