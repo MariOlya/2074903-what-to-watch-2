@@ -11,7 +11,9 @@ use App\Http\Requests\UpdatingFilmRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnprocessableResponse;
+use App\Jobs\ParseFilmInfo;
 use App\Models\User;
+use App\Repositories\Interfaces\FilmApiRepositoryInterface;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Http\Request;
@@ -23,7 +25,8 @@ class FilmController extends Controller
     public function __construct(
         readonly FilmRepositoryInterface $filmRepository,
         readonly FilmFactoryInterface $filmFactory,
-        readonly ReviewRepositoryInterface $reviewRepository
+        readonly ReviewRepositoryInterface $reviewRepository,
+        readonly FilmApiRepositoryInterface $movieInfoRepository
     )
     {
     }
@@ -108,6 +111,9 @@ class FilmController extends Controller
     public function addNewFilm(NewFilmRequest $request): BaseResponse
     {
         $imdbId = $request->validated()['imdb_id'];
+
+        ParseFilmInfo::dispatch($imdbId);
+
         $newFilm = $this->filmFactory->createNewFilm($imdbId);
 
         return new SuccessResponse(
