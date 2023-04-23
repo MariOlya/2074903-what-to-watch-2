@@ -2,9 +2,12 @@
 
 namespace App\Jobs;
 
-use App\Factories\Dto\FilmApiDto;
+use App\Factories\Dto\HtmlAcademyFilmApiDto;
+use App\Factories\Dto\OmdbFilmApiDto;
 use App\Repositories\Interfaces\FilmApiRepositoryInterface;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
+use App\Repositories\Interfaces\HtmlAcademyFilmApiRepositoryInterface;
+use App\Repositories\Interfaces\OmdbFilmApiRepositoryInterface;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -35,21 +38,28 @@ class ParseFilmInfo implements ShouldQueue
      * @throws Exception
      */
     public function handle(
-        FilmApiRepositoryInterface $apiRepository,
+        OmdbFilmApiRepositoryInterface $omdbApiRepository,
+        HtmlAcademyFilmApiRepositoryInterface $htmlAcademyApiRepository,
         FilmRepositoryInterface $filmRepository,
     ): void {
-        $response = $apiRepository->getMovieInfoById($this->imdbId);
+        $omdbResponse = $omdbApiRepository->getMovieInfoById($this->imdbId);
 
-        if ($response['code'] !== 200) {
+        if ($omdbResponse['code'] !== 200) {
             throw new \RuntimeException(
-                message: $response['message'],
-                code: $response['code']
+                message: $omdbResponse['message'],
+                code: $omdbResponse['code']
             );
         }
 
-        $filmInfo = (array)$response['data'];
+        $filmInfo = (array)$omdbResponse['data'];
+        $filmRepository->fillFilmInfo($this->imdbId, new OmdbFilmApiDto($filmInfo));
 
-        $filmRepository->fillFilmInfo($this->imdbId, new FilmApiDto($filmInfo));
+        $htmlAcademyResponse = $htmlAcademyApiRepository->getMovieInfoById($this->imdbId);
+
+        if ($htmlAcademyResponse['code'] === 200) {
+            $additionalFilmInfo = (array)$htmlAcademyResponse['data'];
+            $filmRepository->fillAdditionalFilmInfo($this->imdbId, new HtmlAcademyFilmApiDto($additionalFilmInfo));
+        }
     }
 
     /**
