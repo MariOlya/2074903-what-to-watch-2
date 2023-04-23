@@ -11,6 +11,8 @@
 <img src="https://img.shields.io/badge/php-%5E8.1-blue">
 <img src="https://img.shields.io/badge/laravel-%5E10.0-red">
 <img src="https://img.shields.io/badge/mysql-8.0-orange">
+<img src="https://img.shields.io/badge/phpunit-%5E10.0-blue">
+
 
 * Student: [Olga Marinina](https://up.htmlacademy.ru/yii/4/user/2074903).
 * Mentor: [Mikhail Selyatin](https://htmlacademy.ru/profile/id919955).
@@ -24,6 +26,13 @@ Leave reviews, rate and choose only the best from the world of big cinema.
 ### API specification
 
 Check it [here](https://10.react.pages.academy/wtw/spec#get-/films).
+
+It's not full document so, please, check `/routes/api.php`.
+
+### External API to get film info
+
+1. [Omdb API](https://omdbapi.com/)
+2. [HTML Academy API](http://guide.phpdemo.ru/api/documentation)
 
 ### Getting started
 
