@@ -31,20 +31,17 @@ class FileService
 
     /**
      * @param string $link
-     * @param string $title
-     * @param string $type
      * @param string $folder
      * @param string $disk
-     * @return string
+     * @return void
      * @throws InternalErrorException
      */
-    public function addFileToStorage(
+    public static function addFileToStorage(
         string $link,
-        string $title,
-        string $type,
+        string $path,
         string $folder = self::FOLDER_IMAGES,
         string $disk = self::PUBLIC_STORAGE
-    ): string {
+    ): void {
         $fileUpload = file_get_contents($link);
 
         if (!$fileUpload) {
@@ -54,10 +51,7 @@ class FileService
             );
         }
 
-        $fileExtension = File::extension($link);
-        $fileName = implode('-', explode(' ', strtolower($title))).'-'.$type.'.'.$fileExtension;
-
-        $isSave = Storage::disk($disk)->put($folder.$fileName, $fileUpload);
+        $isSave = Storage::disk($disk)->put($folder.$path, $fileUpload);
 
         if (!$isSave) {
             throw new InternalErrorException(
@@ -65,7 +59,5 @@ class FileService
                 500
             );
         }
-
-        return 'img/'.$fileName;
     }
 }

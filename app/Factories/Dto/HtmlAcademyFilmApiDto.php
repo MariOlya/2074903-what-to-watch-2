@@ -5,16 +5,19 @@ namespace App\Factories\Dto;
 class HtmlAcademyFilmApiDto extends Dto
 {
     /**
-     * To fill additional info (not included in Omdb API) you need only 'icon' (preview image),
-     * 'background' (background image), 'video' (video link), 'preview' (preview video link)
-     *
-     * @param array $params Includes 'name', 'desc', 'director', 'actors[]', 'run_time', 'released', 'genres[]',
-     * 'poster', 'icon', 'background', 'video', 'preview'
+     * @param string|null $title
+     * @param string|null $previewImage
+     * @param string|null $backgroundImage
+     * @param string|null $videoLink
+     * @param string|null $previewVideoLink
      */
     public function __construct(
-        array $params,
+        readonly ?string $title,
+        readonly ?string $previewImage,
+        readonly ?string $backgroundImage,
+        readonly ?string $videoLink,
+        readonly ?string $previewVideoLink
     )
     {
-        $this->setParams($params);
     }
 }

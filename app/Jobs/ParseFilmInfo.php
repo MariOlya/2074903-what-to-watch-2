@@ -58,7 +58,16 @@ class ParseFilmInfo implements ShouldQueue
 
         if ($htmlAcademyResponse['code'] === 200) {
             $additionalFilmInfo = (array)$htmlAcademyResponse['data'];
-            $filmRepository->fillAdditionalFilmInfo($this->imdbId, new HtmlAcademyFilmApiDto($additionalFilmInfo));
+
+            $htmlAcademyFilmApiDto = new HtmlAcademyFilmApiDto(
+                title: $additionalFilmInfo['name'] ?? null,
+                previewImage: $additionalFilmInfo['icon'] ?? null,
+                backgroundImage: $additionalFilmInfo['background'] ?? null,
+                videoLink: $additionalFilmInfo['video'] ?? null,
+                previewVideoLink: $additionalFilmInfo['preview'] ?? null
+            );
+
+            $filmRepository->fillAdditionalFilmInfo($this->imdbId, $htmlAcademyFilmApiDto);
         }
     }
 

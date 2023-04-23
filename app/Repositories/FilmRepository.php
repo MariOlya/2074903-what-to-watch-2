@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
 use App\Factories\Dto\FilmDto;
+use App\Factories\Dto\HtmlAcademyFilmApiDto;
 use App\Factories\Interfaces\FilmFileFactoryInterface;
 use App\Factories\Interfaces\LinkFactoryInterface;
 use App\Models\Actor;
@@ -454,47 +455,43 @@ class FilmRepository implements FilmRepositoryInterface
     {
         /** @var Film $updatedFilm */
         $updatedFilm = $this->findByImdbId($imdbId);
+        /** @var HtmlAcademyFilmApiDto $htmlAcademyFilmApiDto */
+        $htmlAcademyFilmApiDto = $dto;
 
-        $name = $dto->getParams()['name'] ?? null;
-        $icon = $dto->getParams()['icon'] ?? null;
-        $background = $dto->getParams()['background'] ?? null;
-        $videoLink = $dto->getParams()['video'] ?? null;
-        $previewVideoLink = $dto->getParams()['preview'] ?? null;
+        $previousPreviewImage = $updatedFilm->previewImage->link ?? null;
 
         DB::beginTransaction();
 
         try {
-            if ($icon) {
-                $previewImage = $updatedFilm->previewImage;
-                $previousPreviewImage = $previewImage->link;
-                $previewImage->delete();
+            if ($htmlAcademyFilmApiDto->previewImage) {
+                $updatedFilm->previewImage()->delete();
 
-                $previewId = $this->imageFactory->createFromExternalApi(
-                    $icon,
+                $newPreviewImage = $this->imageFactory->createFromExternalApi(
+                    $htmlAcademyFilmApiDto->previewImage,
                     FileType::PREVIEW_TYPE,
-                    $name
+                    $htmlAcademyFilmApiDto->title
                 );
 
-                $updatedFilm->preview_image_id = $previewId;
+                $updatedFilm->preview_image_id = $newPreviewImage->id;
             }
 
-            if ($background) {
-                $backgroundId = $this->imageFactory->createFromExternalApi(
-                    $background,
+            if ($htmlAcademyFilmApiDto->backgroundImage) {
+                $backgroundImage = $this->imageFactory->createFromExternalApi(
+                    $htmlAcademyFilmApiDto->backgroundImage,
                     FileType::BACKGROUND_TYPE,
-                    $name
+                    $htmlAcademyFilmApiDto->title
                 );
 
-                $updatedFilm->background_image_id = $backgroundId;
+                $updatedFilm->background_image_id = $backgroundImage->id;
             }
 
-            if ($videoLink) {
-                $videoLinkId = $this->linkFactory->createNewLink($videoLink, LinkType::VIDEO_TYPE);
+            if ($htmlAcademyFilmApiDto->videoLink) {
+                $videoLinkId = $this->linkFactory->createNewLink($htmlAcademyFilmApiDto->videoLink, LinkType::VIDEO_TYPE);
                 $updatedFilm->video_link_id = $videoLinkId;
             }
 
-            if ($previewVideoLink) {
-                $previewVideoLinkId = $this->linkFactory->createNewLink($previewVideoLink, LinkType::PREVIEW_TYPE);
+            if ($htmlAcademyFilmApiDto->previewVideoLink) {
+                $previewVideoLinkId = $this->linkFactory->createNewLink($htmlAcademyFilmApiDto->previewVideoLink, LinkType::PREVIEW_TYPE);
                 $updatedFilm->preview_video_link_id = $previewVideoLinkId;
             }
 
@@ -502,8 +499,21 @@ class FilmRepository implements FilmRepositoryInterface
 
             DB::commit();
 
-            if ($icon) {
-                FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
+            if ($htmlAcademyFilmApiDto->previewImage){
+                FileService::addFileToStorage(
+                    $htmlAcademyFilmApiDto->previewImage,
+                    substr($newPreviewImage->link, 4)
+                );
+                if ($previousPreviewImage) {
+                    FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
+                }
+            }
+
+            if ($htmlAcademyFilmApiDto->backgroundImage){
+                FileService::addFileToStorage(
+                    $htmlAcademyFilmApiDto->backgroundImage,
+                    substr($backgroundImage->link, 4)
+                );
             }
 
             return $updatedFilm;

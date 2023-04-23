@@ -28,7 +28,7 @@ class FilmImageFactory implements FilmFileFactoryInterface
      * @return int
      * @throws InternalErrorException
      */
-    public function createFromExternalApi(string $link, string $type, string $title): int
+    public function createFromExternalApi(string $link, string $type, string $title): File
     {
         $fileType = FileType::whereType($type)->first();
 
@@ -39,7 +39,8 @@ class FilmImageFactory implements FilmFileFactoryInterface
             );
         }
 
-        $fileName = $this->service->addFileToStorage($link, $title, $type);
+        $fileExtension = \Illuminate\Support\Facades\File::extension($link);
+        $fileName = 'img/'.implode('-', explode(' ', strtolower($title))).'-'.$type.'.'.$fileExtension;
 
         $this->file->link = $fileName;
         $this->file->file_type_id = $fileType->id;
@@ -48,7 +49,7 @@ class FilmImageFactory implements FilmFileFactoryInterface
             throw new InternalErrorException('The error on the server, please, try again', 500);
         }
 
-        return $this->file->id;
+        return $this->file;
     }
 
     /**
