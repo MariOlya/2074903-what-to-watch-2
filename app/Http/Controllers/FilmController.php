@@ -13,7 +13,6 @@ use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnprocessableResponse;
 use App\Jobs\ParseFilmInfo;
 use App\Models\User;
-use App\Repositories\Interfaces\FilmApiRepositoryInterface;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Http\Request;
@@ -26,7 +25,6 @@ class FilmController extends Controller
         readonly FilmRepositoryInterface $filmRepository,
         readonly FilmFactoryInterface $filmFactory,
         readonly ReviewRepositoryInterface $reviewRepository,
-        readonly FilmApiRepositoryInterface $movieInfoRepository
     )
     {
     }
