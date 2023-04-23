@@ -2,7 +2,7 @@
 
 namespace App\Factories\Dto;
 
-class FilmApiDto extends Dto
+class OmdbFilmApiDto extends Dto
 {
     /**
      * @param array $params Includes 'Title', 'Year', 'Rated', 'Released', 'Runtime', 'Genre', 'Director',
