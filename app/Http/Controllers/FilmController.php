@@ -131,7 +131,25 @@ class FilmController extends Controller
     {
         $params = $request->validated();
 
-        $updatedFilm = $this->filmRepository->update($filmId, new FilmDto($params));
+        $filmDto = new FilmDto(
+            name: $params['name'] ?? null,
+            posterImage: $params['poster_image'] ?? null,
+            previewImage: $params['preview_image'] ?? null,
+            backgroundImage: $params['background_image'] ?? null,
+            backgroundColor: $params['background_color'] ?? null,
+            videoLink: $params['video_link'] ?? null,
+            previewVideoLink: ['preview_video_link'] ?? null,
+            description: $params['description'] ?? null,
+            director: $params['director'] ?? null,
+            actors: $params['starring'] ?? null,
+            genres: $params['genre'] ?? null,
+            runTime: $params['run_time'] ?? null,
+            released: $params['released'] ?? null,
+            imdbId: $params['imdb_id'] ?? null,
+            status: ['status'] ?? null
+        );
+
+        $updatedFilm = $this->filmRepository->update($filmId, $filmDto);
 
         return new SuccessResponse(
             data: $updatedFilm

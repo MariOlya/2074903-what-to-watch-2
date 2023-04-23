@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
+use App\Factories\Dto\FilmDto;
 use App\Factories\Interfaces\FilmFileFactoryInterface;
 use App\Factories\Interfaces\LinkFactoryInterface;
 use App\Models\Actor;
@@ -50,22 +51,8 @@ class FilmRepository implements FilmRepositoryInterface
     {
         /** @var Film $film */
         $film = $this->findById($id);
-
-        $newName = $dto->getParams()['name'] ?? null;
-        $newPosterImage = $dto->getParams()['poster_image'] ?? null;
-        $newPreviewImage = $dto->getParams()['preview_image'] ?? null;
-        $newBackgroundImage = $dto->getParams()['background_image'] ?? null;
-        $newBackgroundColor = $dto->getParams()['background_color'] ?? null;
-        $newVideoLink = $dto->getParams()['video_link'] ?? null;
-        $newPreviewVideoLink = $dto->getParams()['preview_video_link'] ?? null;
-        $newDescription = $dto->getParams()['description'] ?? null;
-        $newDirector = $dto->getParams()['director'] ?? null;
-        $newActors = $dto->getParams()['starring'] ?? null;
-        $newGenres = $dto->getParams()['genre'] ?? null;
-        $newRunTime = $dto->getParams()['run_time'] ?? null;
-        $newReleasedYear = $dto->getParams()['released'] ?? null;
-        $newImdbId = $dto->getParams()['imdb_id'] ?? null;
-        $newStatus = $dto->getParams()['status'] ?? null;
+        /** @var FilmDto $filmDto */
+        $filmDto = $dto;
 
         $previousPosterImage = $film->posterImage->link ?? null;
         $previousPreviewImage = $film->previewImage->link ?? null;
@@ -74,126 +61,154 @@ class FilmRepository implements FilmRepositoryInterface
         DB::beginTransaction();
 
         try {
-            if ($newName && $newName !== $film->name) {
-                $film->name = $newName;
+            if ($filmDto->name && $filmDto->name !== $film->name) {
+                $film->name = $filmDto->name;
             }
 
-            if ($newPosterImage && $newPosterImage !== $previousPosterImage) {
+            if ($filmDto->posterImage && $filmDto->posterImage !== $previousPosterImage) {
                 if ($previousPosterImage) {
                     $film->posterImage()->delete();
                 }
-                $posterImageId = $this->imageFactory->createFromEditForm($newPosterImage, FileType::POSTER_TYPE);
+                $posterImageId = $this->imageFactory->createFromEditForm(
+                    $filmDto->posterImage,
+                    FileType::POSTER_TYPE
+                );
                 $film->poster_image_id = $posterImageId;
             }
 
-            if ($newPreviewImage && $newPreviewImage !== $previousPreviewImage) {
+            if ($filmDto->previewImage && $filmDto->previewImage !== $previousPreviewImage) {
                 if ($previousPreviewImage) {
                     $film->previewImage()->delete();
                 }
-                $previewImageId = $this->imageFactory->createFromEditForm($newPreviewImage, FileType::PREVIEW_TYPE);
+                $previewImageId = $this->imageFactory->createFromEditForm(
+                    $filmDto->previewImage,
+                    FileType::PREVIEW_TYPE
+                );
                 $film->preview_image_id = $previewImageId;
             }
 
-            if ($newBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
+            if ($filmDto->backgroundImage && $filmDto->backgroundImage !== $previousBackgroundImage) {
                 if ($previousBackgroundImage) {
                     $film->backgroundImage()->delete();
                 }
                 $backgroundImageId = $this->imageFactory->createFromEditForm(
-                    $newBackgroundImage,
+                    $filmDto->backgroundImage,
                     FileType::BACKGROUND_TYPE
                 );
                 $film->background_image_id = $backgroundImageId;
             }
 
-            if ($newBackgroundColor && $newBackgroundColor !== $film->backgroundColor->color) {
+            if ($filmDto->backgroundColor && $filmDto->backgroundColor !== $film->backgroundColor->color) {
                 $newColor = Color::query()->firstOrCreate([
-                    'color' => $newBackgroundColor
+                    'color' => $filmDto->backgroundColor
                 ]);
 
                 $film->background_color_id = $newColor->id;
             }
 
-            if ($newVideoLink && $newVideoLink !== $film->videoLink->link) {
+            if ($filmDto->videoLink && $filmDto->videoLink !== $film->videoLink->link) {
                 if ($film->videoLink->link) {
                     $film->videoLink()->delete();
                 }
-                $videoLinkId = $this->linkFactory->createNewLink($newVideoLink, LinkType::VIDEO_TYPE);
+                $videoLinkId = $this->linkFactory->createNewLink($filmDto->videoLink, LinkType::VIDEO_TYPE);
                 $film->video_link_id = $videoLinkId;
             }
 
-            if ($newPreviewVideoLink && $newPreviewVideoLink !== $film->previewVideoLink->link) {
+            if ($filmDto->previewVideoLink && $filmDto->previewVideoLink !== $film->previewVideoLink->link) {
                 if ($film->previewVideoLink->link) {
                     $film->previewVideoLink()->delete();
                 }
-                $previewVideoLinkId = $this->linkFactory->createNewLink($newPreviewVideoLink, LinkType::PREVIEW_TYPE);
+                $previewVideoLinkId = $this->linkFactory->createNewLink(
+                    $filmDto->previewVideoLink,
+                    LinkType::PREVIEW_TYPE
+                );
                 $film->preview_video_link_id = $previewVideoLinkId;
             }
 
-            if ($newDescription && $newDescription !== $film->description) {
-                $film->description = $newDescription;
+            if ($filmDto->description && $filmDto->description !== $film->description) {
+                $film->description = $filmDto->description;
             }
 
-            if ($newDirector && $newDirector !== $film->director->name) {
+            if ($filmDto->director && $filmDto->director !== $film->director->name) {
                 $newDirectorLink = Director::query()->firstOrCreate([
-                    'name' => $newDirector
+                    'name' => $filmDto->director
                 ]);
 
                 $film->director_id = $newDirectorLink->id;
             }
 
-            if ($newActors) {
-                $newActorIds = [];
-                foreach ($newActors as $newActor) {
-                    $actor = Actor::query()->firstOrCreate([
-                        'name' => $newActor
-                    ]);
-                    $newActorIds[] = $actor->id;
+            if ($filmDto->actors) {
+                $alreadyExistedActors = Actor::query()->whereIn('name', $filmDto->actors)->get();
+
+                $newActorIds = array_map(
+                    static fn ($actor) => $actor['id'],
+                    $alreadyExistedActors->toArray()
+                );
+
+                foreach ($filmDto->actors as $actor) {
+                    $isExisted = $alreadyExistedActors->search($actor, true);
+                    if (!$isExisted) {
+                        $newActor = Actor::query()->create([
+                            'name' => $actor,
+                        ]);
+                        $newActorIds[] = $newActor->id;
+                    }
                 }
 
                 $film->actors()->sync($newActorIds);
             }
 
-            if ($newGenres) {
-                $newGenreIds = [];
-                foreach ($newGenres as $newGenre) {
-                    $genre = Genre::query()->firstOrCreate([
-                        'genre' => $newGenre
-                    ]);
-                    $newGenreIds[] = $genre->id;
+            if ($filmDto->genres) {
+
+                $alreadyExistedGenres = Genre::query()->whereIn('genre', $filmDto->genres)->get();
+
+                $newGenreIds = array_map(
+                    static fn ($genre) => $genre['id'],
+                    $alreadyExistedGenres->toArray()
+                );
+
+                foreach ($filmDto->genres as $genre) {
+                    $isExisted = $alreadyExistedGenres->search($genre, true);
+                    if (!$isExisted) {
+                        $newGenre = Genre::query()->create([
+                            'genre' => $genre,
+                        ]);
+                        $newGenreIds[] = $newGenre->id;
+                    }
                 }
 
                 $film->genres()->sync($newGenreIds);
             }
 
-            if ($newRunTime && $newRunTime !== $film->run_time) {
-                $film->run_time = $newRunTime;
+            if ($filmDto->runTime && $filmDto->runTime !== $film->run_time) {
+                $film->run_time = $filmDto->runTime;
             }
 
-            if ($newReleasedYear && $newReleasedYear !== $film->released) {
-                $film->released = $newReleasedYear;
+            if ($filmDto->released && $filmDto->released !== $film->released) {
+                $film->released = $filmDto->released;
             }
 
-            if ($newImdbId && $newImdbId !== $film->imdb_id) {
-                $film->imdb_id = $newImdbId;
+            if ($filmDto->imdbId && $filmDto->imdbId !== $film->imdb_id) {
+                $film->imdb_id = $filmDto->imdbId;
             }
 
-            if ($newStatus && $newStatus !== $film->status->status) {
-                $film->status_id = FilmStatus::whereStatus($newStatus)->value('id');
+            if ($filmDto->status && $filmDto->status !== $film->status->status) {
+                $film->status_id = FilmStatus::whereStatus($filmDto->status)->value('id');
             }
 
             $film->save();
 
             DB::commit();
 
-            if ($previousPosterImage && $newPosterImage !== $previousPosterImage) {
+            if ($previousPosterImage && $filmDto->posterImage !== $previousPosterImage) {
                 FileService::deleteFileFromStorage(substr($previousPosterImage, 4));
             }
 
-            if ($previousPreviewImage && $newPreviewImage !== $previousPreviewImage) {
+            if ($previousPreviewImage && $filmDto->previewImage !== $previousPreviewImage) {
                 FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
             }
 
-            if ($previousBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
+            if ($previousBackgroundImage && $filmDto->backgroundImage !== $previousBackgroundImage) {
                 FileService::deleteFileFromStorage(substr($previousBackgroundImage, 4));
             }
 
