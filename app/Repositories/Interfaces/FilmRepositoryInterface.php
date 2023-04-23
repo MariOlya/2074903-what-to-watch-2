@@ -22,4 +22,6 @@ interface FilmRepositoryInterface extends BaseRepositoryInterface
     public function favoriteFilms(int $userId, array $columns = ['*']): LengthAwarePaginator;
 
     public function fillFilmInfo(string $imdbId, Dto $dto): Model;
+
+    public function fillAdditionalFilmInfo(string $imdbId, Dto $dto): Model;
 }

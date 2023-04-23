@@ -390,7 +390,7 @@ class FilmRepository implements FilmRepositoryInterface
             $newGenreIds = [];
             foreach ($genres as $newGenre) {
                 $genre = Genre::query()->firstOrCreate([
-                    'genre' => $newGenre
+                    'genre' => strtolower($newGenre)
                 ]);
                 $newGenreIds[] = $genre->id;
             }
@@ -421,6 +421,75 @@ class FilmRepository implements FilmRepositoryInterface
             $updatedFilm->actors()->sync($newActorIds);
 
             DB::commit();
+
+            return $updatedFilm;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $imdbId
+     * @param Dto $dto
+     * @return Model
+     * @throws \Exception
+     */
+    public function fillAdditionalFilmInfo(string $imdbId, Dto $dto): Model
+    {
+        /** @var Film $updatedFilm */
+        $updatedFilm = $this->findByImdbId($imdbId);
+
+        $name = $dto->getParams()['name'] ?? null;
+        $icon = $dto->getParams()['icon'] ?? null;
+        $background = $dto->getParams()['background'] ?? null;
+        $videoLink = $dto->getParams()['video'] ?? null;
+        $previewVideoLink = $dto->getParams()['preview'] ?? null;
+
+        DB::beginTransaction();
+
+        try {
+            if ($icon) {
+                $previewImage = $updatedFilm->previewImage;
+                $previousPreviewImage = $previewImage->link;
+                $previewImage->delete();
+
+                $previewId = $this->imageFactory->createFromExternalApi(
+                    $icon,
+                    FileType::PREVIEW_TYPE,
+                    $name
+                );
+
+                $updatedFilm->preview_image_id = $previewId;
+            }
+
+            if ($background) {
+                $backgroundId = $this->imageFactory->createFromExternalApi(
+                    $background,
+                    FileType::BACKGROUND_TYPE,
+                    $name
+                );
+
+                $updatedFilm->background_image_id = $backgroundId;
+            }
+
+            if ($videoLink) {
+                $videoLinkId = $this->linkFactory->createNewLink($videoLink, LinkType::VIDEO_TYPE);
+                $updatedFilm->video_link_id = $videoLinkId;
+            }
+
+            if ($previewVideoLink) {
+                $previewVideoLinkId = $this->linkFactory->createNewLink($previewVideoLink, LinkType::PREVIEW_TYPE);
+                $updatedFilm->preview_video_link_id = $previewVideoLinkId;
+            }
+
+            $updatedFilm->save();
+
+            DB::commit();
+
+            if ($icon) {
+                FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
+            }
 
             return $updatedFilm;
         } catch (\Exception $e) {
