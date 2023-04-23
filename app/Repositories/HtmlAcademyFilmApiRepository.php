@@ -1,28 +1,23 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Repositories;
 
-use App\Repositories\Interfaces\FilmApiRepositoryInterface;
+use App\Repositories\Interfaces\HtmlAcademyFilmApiRepositoryInterface;
 use App\Services\Interfaces\ApiHandlerInterface;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 
-class FilmApiRepository implements FilmApiRepositoryInterface, ApiHandlerInterface
+class HtmlAcademyFilmApiRepository implements HtmlAcademyFilmApiRepositoryInterface, ApiHandlerInterface
 {
-    protected string $host = 'https://www.omdbapi.com';
-    protected ClientInterface $client;
-    protected string $apiKey = 'de1e75bf';
-    protected string $type = 'i';
+    protected string $host = 'http://guide.phpdemo.ru/api';
+    protected string $filmSearchPath = '/films/';
 
     /**
      * @param ClientInterface $client
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(readonly ClientInterface $client)
     {
-        $this->client = $client;
     }
 
     /**
@@ -33,9 +28,7 @@ class FilmApiRepository implements FilmApiRepositoryInterface, ApiHandlerInterfa
             return $this->output('400', 'Missing required fields');
         }
 
-        $parameters[$this->type] = $requiredKeyword;
-
-        return $this->host . '/?apikey=' . $this->apiKey . '&' . http_build_query($parameters);
+        return $this->host . $this->filmSearchPath . $requiredKeyword;
     }
 
     public function getMovieInfoById(string $id) : array
