@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
+use App\Factories\Dto\ReviewDto;
 use App\Models\Review;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,14 +32,15 @@ class ReviewRepository implements ReviewRepositoryInterface
     public function update(int $id, Dto $dto): Model
     {
         $review = Review::whereId($id)->firstOrFail();
+        /** @var ReviewDto $reviewDto */
+        $reviewDto = $dto;
 
-        $newText = $dto->getParams()['text'];
-        $newRating = $dto->getParams()['rating'] ?? null;
+        if ($reviewDto->text) {
+            $review->text = $reviewDto->text;
+        }
 
-        $review->text = $newText;
-
-        if ($newRating) {
-            $review->rating = $newRating;
+        if ($reviewDto->rating) {
+            $review->rating = $reviewDto->rating;
         }
 
         if (!$review->save()) {

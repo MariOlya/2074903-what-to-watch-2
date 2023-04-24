@@ -39,21 +39,27 @@ class ReviewController extends Controller
     public function addNewReview(ReviewRequest $request, int $filmId): BaseResponse
     {
         $params = $request->validated();
-        $newVote = $params['rating'] ?? null;
-
         /** @var User $user */
         $user = Auth::user();
+
+        $reviewDto = new ReviewDto(
+            text: $params['text'] ?? null,
+            rating: $params['rating'] ?? null,
+            reviewId: $params['comment_id'] ?? null,
+            userId: $user->id,
+            filmId: $filmId
+        );
+
+        $newVote = $reviewDto->rating;
 
         //Add review + update rating
         DB::beginTransaction();
 
         try {
-            $newReview = $this->reviewFactory->createNewReview(
-                new ReviewDto($params, $user->id, $filmId)
-            );
+            $newReview = $this->reviewFactory->createNewReview($reviewDto);
 
             if ($newVote) {
-                $this->filmRepository->updateRating($filmId, (int)$newVote);
+                $this->filmRepository->updateRating($filmId, $newVote);
             }
 
             DB::commit();
@@ -78,21 +84,26 @@ class ReviewController extends Controller
     public function updateReview(ReviewRequest $request, Review $review): BaseResponse
     {
         $params = $request->validated();
+        $reviewDto = new ReviewDto(
+            text: $params['text'] ?? null,
+            rating: $params['rating'] ?? null,
+            reviewId: $params['comment_id'] ?? null,
+        );
 
         $reviewId = $review->id;
         $filmId = $review->film_id;
 
         $latestVote = $review->rating ?? null;
-        $newVote = $params['rating'] ?? null;
+        $newVote = $reviewDto->rating;
 
         //Change review + update rating
         DB::beginTransaction();
 
         try {
-            $updatedReview = $this->reviewRepository->update($reviewId, new ReviewDto($params));
+            $updatedReview = $this->reviewRepository->update($reviewId, $reviewDto);
 
             if ($newVote) {
-                $this->filmRepository->updateRating($filmId, (int)$newVote, $latestVote);
+                $this->filmRepository->updateRating($filmId, $newVote, $latestVote);
             }
 
             DB::commit();
