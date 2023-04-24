@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Factories\Dto\Dto;
 use App\Factories\Dto\FilmDto;
 use App\Factories\Dto\HtmlAcademyFilmApiDto;
+use App\Factories\Dto\OmdbFilmApiDto;
 use App\Factories\Interfaces\FilmFileFactoryInterface;
 use App\Factories\Interfaces\LinkFactoryInterface;
 use App\Models\Actor;
@@ -160,7 +161,6 @@ class FilmRepository implements FilmRepositoryInterface
             }
 
             if ($filmDto->genres) {
-
                 $alreadyExistedGenres = Genre::query()->whereIn('genre', $filmDto->genres)->get();
 
                 $newGenreIds = array_map(
@@ -378,65 +378,125 @@ class FilmRepository implements FilmRepositoryInterface
     {
         /** @var Film $updatedFilm */
         $updatedFilm = $this->findByImdbId($imdbId);
+        /** @var OmdbFilmApiDto $omdbFilmApiDto */
+        $omdbFilmApiDto = $dto;
 
         DB::beginTransaction();
 
         try {
-            $posterId = $this->imageFactory->createFromExternalApi(
-                $dto->getParams()['Poster'],
-                FileType::POSTER_TYPE,
-                $dto->getParams()['Title']
-            );
+            if ($omdbFilmApiDto->posterImage) {
+                $posterImage = $this->imageFactory->createFromExternalApi(
+                    $omdbFilmApiDto->posterImage,
+                    FileType::POSTER_TYPE,
+                    $omdbFilmApiDto->title
+                );
 
-            $previewId = $this->imageFactory->createFromExternalApi(
-                $dto->getParams()['Poster'],
-                FileType::PREVIEW_TYPE,
-                $dto->getParams()['Title']
-            );
+                $previewImage = $this->imageFactory->createFromExternalApi(
+                    $omdbFilmApiDto->posterImage,
+                    FileType::PREVIEW_TYPE,
+                    $omdbFilmApiDto->title
+                );
 
-            $releasedYear = substr($dto->getParams()['Released'], -4, 4);
-
-            $directorId = Director::query()->firstOrCreate([
-                'name' => $dto->getParams()['Director']
-            ])->id;
-
-            $runtime = substr($dto->getParams()['Runtime'], 0, -4);
-
-            $genres = explode(', ', $dto->getParams()['Genre']);
-            $newGenreIds = [];
-            foreach ($genres as $newGenre) {
-                $genre = Genre::query()->firstOrCreate([
-                    'genre' => strtolower($newGenre)
-                ]);
-                $newGenreIds[] = $genre->id;
+                $updatedFilm->poster_image_id = $posterImage->id;
+                $updatedFilm->preview_image_id = $previewImage->id;
             }
 
-            $actors = explode(', ', $dto->getParams()['Actors']);
-            $newActorIds = [];
-            foreach ($actors as $newActor) {
-                $actor = Actor::query()->firstOrCreate([
-                    'name' => $newActor
-                ]);
-                $newActorIds[] = $actor->id;
+            if ($omdbFilmApiDto->released) {
+                $releasedYear = substr($omdbFilmApiDto->released, -4, 4);
+                $updatedFilm->released = (int)$releasedYear;
             }
 
-            $updatedFilm->poster_image_id = $posterId;
-            $updatedFilm->preview_image_id = $previewId;
-            $updatedFilm->name = $dto->getParams()['Title'];
-            $updatedFilm->released = (int)$releasedYear;
-            $updatedFilm->description = $dto->getParams()['Plot'];
-            $updatedFilm->director_id = $directorId;
-            $updatedFilm->run_time = (int)$runtime;
-            $updatedFilm->rating = (float)$dto->getParams()['imdbRating'];
-            $updatedFilm->vote_amount = (int)str_replace(',', '', $dto->getParams()['imdbVotes']);
+            if ($omdbFilmApiDto->director) {
+                $directorId = Director::query()->firstOrCreate([
+                    'name' => $omdbFilmApiDto->director
+                ])->id;
+                $updatedFilm->director_id = $directorId;
+            }
+
+            if ($omdbFilmApiDto->runTime) {
+                $runtime = substr($omdbFilmApiDto->runTime, 0, -4);
+                $updatedFilm->run_time = (int)$runtime;
+            }
+
+            if ($omdbFilmApiDto->genres) {
+                $genres = explode(', ', $omdbFilmApiDto->genres);
+
+                $alreadyExistedGenres = Genre::query()->whereIn('genre', $genres)->get();
+
+                $newGenreIds = array_map(
+                    static fn ($genre) => $genre['id'],
+                    $alreadyExistedGenres->toArray()
+                );
+
+                foreach ($genres as $genre) {
+                    $isExisted = $alreadyExistedGenres->search($genre, true);
+                    if (!$isExisted) {
+                        $newGenre = Genre::query()->create([
+                            'genre' => $genre,
+                        ]);
+                        $newGenreIds[] = $newGenre->id;
+                    }
+                }
+
+                $updatedFilm->genres()->sync($newGenreIds);
+            }
+
+            if ($omdbFilmApiDto->actors) {
+                $actors = explode(', ', $omdbFilmApiDto->actors);
+
+                $alreadyExistedActors = Actor::query()->whereIn('name', $actors)->get();
+
+                $newActorIds = array_map(
+                    static fn ($actor) => $actor['id'],
+                    $alreadyExistedActors->toArray()
+                );
+
+                foreach ($actors as $actor) {
+                    $isExisted = $alreadyExistedActors->search($actor, true);
+                    if (!$isExisted) {
+                        $newActor = Actor::query()->create([
+                            'name' => $actor,
+                        ]);
+                        $newActorIds[] = $newActor->id;
+                    }
+                }
+
+                $updatedFilm->actors()->sync($newActorIds);
+            }
+
+            if ($omdbFilmApiDto->title) {
+                $updatedFilm->name = $omdbFilmApiDto->title;
+            }
+
+            if ($omdbFilmApiDto->description) {
+                $updatedFilm->description = $omdbFilmApiDto->description;
+            }
+
+            if ($omdbFilmApiDto->rating) {
+                $updatedFilm->rating = (float)$omdbFilmApiDto->rating;
+            }
+
+            if ($omdbFilmApiDto->amountVotes) {
+                $updatedFilm->vote_amount = (int)str_replace(',', '', $omdbFilmApiDto->amountVotes);
+            }
+
             $updatedFilm->status_id = FilmStatus::whereStatus(Film::MODERATE_FILM_STATUS)->value('id');
 
             $updatedFilm->save();
 
-            $updatedFilm->genres()->sync($newGenreIds);
-            $updatedFilm->actors()->sync($newActorIds);
-
             DB::commit();
+
+            if ($omdbFilmApiDto->posterImage){
+                FileService::addFileToStorage(
+                    $omdbFilmApiDto->posterImage,
+                    substr($posterImage->link, 4)
+                );
+
+                FileService::addFileToStorage(
+                    $omdbFilmApiDto->posterImage,
+                    substr($previewImage->link, 4)
+                );
+            }
 
             return $updatedFilm;
         } catch (\Exception $e) {

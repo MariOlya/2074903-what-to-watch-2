@@ -52,7 +52,21 @@ class ParseFilmInfo implements ShouldQueue
         }
 
         $filmInfo = (array)$omdbResponse['data'];
-        $filmRepository->fillFilmInfo($this->imdbId, new OmdbFilmApiDto($filmInfo));
+
+        $omdbFilmApiDto = new OmdbFilmApiDto(
+            title: $filmInfo['Title'] ?? null,
+            released: $filmInfo['Released'] ?? null,
+            runTime: $filmInfo['Runtime'] ?? null,
+            genres: $filmInfo['Genre'] ?? null,
+            director: $filmInfo['Director'] ?? null,
+            actors: $filmInfo['Actors'] ?? null,
+            description: $filmInfo['Plot'] ?? null,
+            posterImage: $filmInfo['Poster'] ?? null,
+            rating: $filmInfo['imdbRating'] ?? null,
+            amountVotes: $filmInfo['imdbVotes'] ?? null
+        );
+
+        $filmRepository->fillFilmInfo($this->imdbId, $omdbFilmApiDto);
 
         $htmlAcademyResponse = $htmlAcademyApiRepository->getMovieInfoById($this->imdbId);
 
