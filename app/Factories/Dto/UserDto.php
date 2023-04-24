@@ -8,14 +8,17 @@ namespace App\Factories\Dto;
 class UserDto extends Dto
 {
     /**
-     * @param array $params Includes 'name', 'email', 'password'
+     * @param string|null $name
+     * @param string|null $email
+     * @param string|null $password
      * @param int|null $fileId
      */
     public function __construct(
-        array $params,
+        readonly ?string $name,
+        readonly ?string $email,
+        readonly ?string $password,
         readonly ?int $fileId = null
     )
     {
-        $this->setParams($params);
     }
 }

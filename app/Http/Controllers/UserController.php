@@ -33,11 +33,16 @@ class UserController extends Controller
     public function register(UserRequest $request): BaseResponse
     {
         $params = $request->safe()->except('file');
+        $userDto = new UserDto(
+            name: $params['name'] ?? null,
+            email: $params['email'] ?? null,
+            password: $params['password'] ?? null
+        );
 
         // add the rule here to save File and add file id to User
         // $fileParams = $request->safe()->only('file');
 
-        $newUser = $this->userFactory->createNewUser(new UserDto($params));
+        $newUser = $this->userFactory->createNewUser($userDto);
 
         $token = $newUser->createToken('auth-token');
 
@@ -83,11 +88,16 @@ class UserController extends Controller
 
         $userId = $user->id;
         $params = $request->safe()->except('file');
+        $userDto = new UserDto(
+            name: $params['name'] ?? null,
+            email: $params['email'] ?? null,
+            password: $params['password'] ?? null,
+        );
 
         // add the rule here to save File and add file id to User
         // $fileParams = $request->safe()->only('file');
 
-        $updatedUser = $this->userRepository->update($userId, new UserDto($params));
+        $updatedUser = $this->userRepository->update($userId, $userDto);
 
         return new SuccessResponse(
             data: [
