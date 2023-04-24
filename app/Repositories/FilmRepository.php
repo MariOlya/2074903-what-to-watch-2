@@ -148,7 +148,7 @@ class FilmRepository implements FilmRepositoryInterface
                 );
 
                 foreach ($filmDto->actors as $actor) {
-                    $isExisted = $alreadyExistedActors->search($actor, true);
+                    $isExisted = $alreadyExistedActors->contains('name', '=', $actor);
                     if (!$isExisted) {
                         $newActor = Actor::query()->create([
                             'name' => $actor,
@@ -169,7 +169,8 @@ class FilmRepository implements FilmRepositoryInterface
                 );
 
                 foreach ($filmDto->genres as $genre) {
-                    $isExisted = $alreadyExistedGenres->search($genre, true);
+                    $isExisted = $alreadyExistedGenres->contains('genre', '=', $genre);
+
                     if (!$isExisted) {
                         $newGenre = Genre::query()->create([
                             'genre' => $genre,
@@ -429,7 +430,7 @@ class FilmRepository implements FilmRepositoryInterface
                 );
 
                 foreach ($genres as $genre) {
-                    $isExisted = $alreadyExistedGenres->search($genre, true);
+                    $isExisted = $alreadyExistedGenres->contains('genre', '=', $genre);
                     if (!$isExisted) {
                         $newGenre = Genre::query()->create([
                             'genre' => $genre,
@@ -452,7 +453,7 @@ class FilmRepository implements FilmRepositoryInterface
                 );
 
                 foreach ($actors as $actor) {
-                    $isExisted = $alreadyExistedActors->search($actor, true);
+                    $isExisted = $alreadyExistedActors->contains('name', '=', $actor);
                     if (!$isExisted) {
                         $newActor = Actor::query()->create([
                             'name' => $actor,

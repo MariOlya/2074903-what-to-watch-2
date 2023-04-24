@@ -110,9 +110,9 @@ class FilmController extends Controller
     {
         $imdbId = $request->validated()['imdb_id'];
 
-        ParseFilmInfo::dispatch($imdbId);
-
         $newFilm = $this->filmFactory->createNewFilm($imdbId);
+
+        ParseFilmInfo::dispatch($imdbId);
 
         return new SuccessResponse(
             codeResponse: Response::HTTP_CREATED,
@@ -138,7 +138,7 @@ class FilmController extends Controller
             backgroundImage: $params['background_image'] ?? null,
             backgroundColor: $params['background_color'] ?? null,
             videoLink: $params['video_link'] ?? null,
-            previewVideoLink: ['preview_video_link'] ?? null,
+            previewVideoLink: $params['preview_video_link'] ?? null,
             description: $params['description'] ?? null,
             director: $params['director'] ?? null,
             actors: $params['starring'] ?? null,
@@ -146,7 +146,7 @@ class FilmController extends Controller
             runTime: $params['run_time'] ?? null,
             released: $params['released'] ?? null,
             imdbId: $params['imdb_id'] ?? null,
-            status: ['status'] ?? null
+            status: $params['status'] ?? null
         );
 
         $updatedFilm = $this->filmRepository->update($filmId, $filmDto);
