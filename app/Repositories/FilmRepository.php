@@ -421,15 +421,19 @@ class FilmRepository implements FilmRepositoryInterface
 
             if ($omdbFilmApiDto->genres) {
                 $genres = explode(', ', $omdbFilmApiDto->genres);
+                $newGenres = array_map(
+                    static fn ($genre) => strtolower($genre),
+                    $genres
+                );
 
-                $alreadyExistedGenres = Genre::query()->whereIn('genre', $genres)->get();
+                $alreadyExistedGenres = Genre::query()->whereIn('genre', $newGenres)->get();
 
                 $newGenreIds = array_map(
                     static fn ($genre) => $genre['id'],
                     $alreadyExistedGenres->toArray()
                 );
 
-                foreach ($genres as $genre) {
+                foreach ($newGenres as $genre) {
                     $isExisted = $alreadyExistedGenres->contains('genre', '=', $genre);
                     if (!$isExisted) {
                         $newGenre = Genre::query()->create([
