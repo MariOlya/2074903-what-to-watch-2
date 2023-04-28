@@ -14,30 +14,25 @@ class UserRepository implements UserRepositoryInterface
 {
     public function update(int $id, UserDto $dto): Model
     {
-        $updatedUser = User::query()->find($id);
+        $updatedUser = User::whereId($id)->firstOrFail();
 
-        $newName = $dto->getParams()['name'] ?? null;
-        $newPassword = $dto->getParams()['password'] ?? null;
-        $newEmail = $dto->getParams()['email'] ?? null;
-        $newAvatarId = $dto->fileId;
-
-        if ($newName && $newName !== $updatedUser->name) {
-            $updatedUser->name = $newName;
+        if ($dto->name && $dto->name !== $updatedUser->name) {
+            $updatedUser->name = $dto->name;
         }
 
-        if ($newEmail && $newEmail !== $updatedUser->email) {
-            $updatedUser->email = $newEmail;
+        if ($dto->email && $dto->email !== $updatedUser->email) {
+            $updatedUser->email = $dto->email;
         }
 
-        if ($newPassword) {
-            $hashedPassword = Hash::make($newPassword);
+        if ($dto->password) {
+            $hashedPassword = Hash::make($dto->password);
             if ($hashedPassword !== $updatedUser->password) {
                 $updatedUser->password = $hashedPassword;
             }
         }
 
-        if ($newAvatarId) {
-            $updatedUser->avatar_id = $newAvatarId;
+        if ($dto->fileId) {
+            $updatedUser->avatar_id = $dto->fileId;
         }
 
         $updatedUser->update();

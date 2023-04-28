@@ -9,12 +9,9 @@ use App\Factories\Interfaces\FilmFactoryInterface;
 use App\Http\Requests\NewFilmRequest;
 use App\Http\Requests\UpdatingFilmRequest;
 use App\Http\Responses\BaseResponse;
-use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
 use App\Http\Responses\UnprocessableResponse;
-use App\Models\Film;
-use App\Models\FilmStatus;
+use App\Jobs\ParseFilmInfoJob;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
@@ -27,7 +24,7 @@ class FilmController extends Controller
     public function __construct(
         readonly FilmRepositoryInterface $filmRepository,
         readonly FilmFactoryInterface $filmFactory,
-        readonly ReviewRepositoryInterface $reviewRepository
+        readonly ReviewRepositoryInterface $reviewRepository,
     )
     {
     }
@@ -42,10 +39,6 @@ class FilmController extends Controller
     public function getFilmInfo(Request $request, int $filmId): BaseResponse
     {
         $film = $this->filmRepository->findById($filmId);
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
 
         /** @var User $currentUser */
         $currentUser = $request->user('sanctum');
@@ -72,10 +65,6 @@ class FilmController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() !== null) {
             return new UnprocessableResponse();
         }
@@ -100,10 +89,6 @@ class FilmController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         if ($user->favoriteFilms()->where('film_id', '=', $filmId)->first() === null) {
             return new UnprocessableResponse();
         }
@@ -124,7 +109,10 @@ class FilmController extends Controller
     public function addNewFilm(NewFilmRequest $request): BaseResponse
     {
         $imdbId = $request->validated()['imdb_id'];
+
         $newFilm = $this->filmFactory->createNewFilm($imdbId);
+
+        ParseFilmInfoJob::dispatch($imdbId);
 
         return new SuccessResponse(
             codeResponse: Response::HTTP_CREATED,
@@ -143,7 +131,25 @@ class FilmController extends Controller
     {
         $params = $request->validated();
 
-        $updatedFilm = $this->filmRepository->update($filmId, new FilmDto($params));
+        $filmDto = new FilmDto(
+            name: $params['name'] ?? null,
+            posterImage: $params['poster_image'] ?? null,
+            previewImage: $params['preview_image'] ?? null,
+            backgroundImage: $params['background_image'] ?? null,
+            backgroundColor: $params['background_color'] ?? null,
+            videoLink: $params['video_link'] ?? null,
+            previewVideoLink: $params['preview_video_link'] ?? null,
+            description: $params['description'] ?? null,
+            director: $params['director'] ?? null,
+            actors: $params['starring'] ?? null,
+            genres: $params['genre'] ?? null,
+            runTime: $params['run_time'] ?? null,
+            released: $params['released'] ?? null,
+            imdbId: $params['imdb_id'] ?? null,
+            status: $params['status'] ?? null
+        );
+
+        $updatedFilm = $this->filmRepository->update($filmId, $filmDto);
 
         return new SuccessResponse(
             data: $updatedFilm
@@ -158,11 +164,7 @@ class FilmController extends Controller
      */
     public function getFilmReviews(int $filmId): BaseResponse
     {
-        $film = Film::whereId($filmId)->first();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
+        $this->filmRepository->findById($filmId);
 
         $reviews = $this->reviewRepository->allForFilm($filmId);
 

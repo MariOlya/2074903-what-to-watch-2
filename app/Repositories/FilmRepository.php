@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
+use App\Factories\Dto\FilmDto;
+use App\Factories\Dto\HtmlAcademyFilmApiDto;
+use App\Factories\Dto\OmdbFilmApiDto;
 use App\Factories\Interfaces\FilmFileFactoryInterface;
 use App\Factories\Interfaces\LinkFactoryInterface;
 use App\Models\Actor;
@@ -50,22 +53,8 @@ class FilmRepository implements FilmRepositoryInterface
     {
         /** @var Film $film */
         $film = $this->findById($id);
-
-        $newName = $dto->getParams()['name'] ?? null;
-        $newPosterImage = $dto->getParams()['poster_image'] ?? null;
-        $newPreviewImage = $dto->getParams()['preview_image'] ?? null;
-        $newBackgroundImage = $dto->getParams()['background_image'] ?? null;
-        $newBackgroundColor = $dto->getParams()['background_color'] ?? null;
-        $newVideoLink = $dto->getParams()['video_link'] ?? null;
-        $newPreviewVideoLink = $dto->getParams()['preview_video_link'] ?? null;
-        $newDescription = $dto->getParams()['description'] ?? null;
-        $newDirector = $dto->getParams()['director'] ?? null;
-        $newActors = $dto->getParams()['starring'] ?? null;
-        $newGenres = $dto->getParams()['genre'] ?? null;
-        $newRunTime = $dto->getParams()['run_time'] ?? null;
-        $newReleasedYear = $dto->getParams()['released'] ?? null;
-        $newImdbId = $dto->getParams()['imdb_id'] ?? null;
-        $newStatus = $dto->getParams()['status'] ?? null;
+        /** @var FilmDto $filmDto */
+        $filmDto = $dto;
 
         $previousPosterImage = $film->posterImage->link ?? null;
         $previousPreviewImage = $film->previewImage->link ?? null;
@@ -74,126 +63,154 @@ class FilmRepository implements FilmRepositoryInterface
         DB::beginTransaction();
 
         try {
-            if ($newName && $newName !== $film->name) {
-                $film->name = $newName;
+            if ($filmDto->name && $filmDto->name !== $film->name) {
+                $film->name = $filmDto->name;
             }
 
-            if ($newPosterImage && $newPosterImage !== $previousPosterImage) {
+            if ($filmDto->posterImage && $filmDto->posterImage !== $previousPosterImage) {
                 if ($previousPosterImage) {
                     $film->posterImage()->delete();
                 }
-                $posterImageId = $this->imageFactory->createFromEditForm($newPosterImage, FileType::POSTER_TYPE);
+                $posterImageId = $this->imageFactory->createFromEditForm(
+                    $filmDto->posterImage,
+                    FileType::POSTER_TYPE
+                );
                 $film->poster_image_id = $posterImageId;
             }
 
-            if ($newPreviewImage && $newPreviewImage !== $previousPreviewImage) {
+            if ($filmDto->previewImage && $filmDto->previewImage !== $previousPreviewImage) {
                 if ($previousPreviewImage) {
                     $film->previewImage()->delete();
                 }
-                $previewImageId = $this->imageFactory->createFromEditForm($newPreviewImage, FileType::PREVIEW_TYPE);
+                $previewImageId = $this->imageFactory->createFromEditForm(
+                    $filmDto->previewImage,
+                    FileType::PREVIEW_TYPE
+                );
                 $film->preview_image_id = $previewImageId;
             }
 
-            if ($newBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
+            if ($filmDto->backgroundImage && $filmDto->backgroundImage !== $previousBackgroundImage) {
                 if ($previousBackgroundImage) {
                     $film->backgroundImage()->delete();
                 }
                 $backgroundImageId = $this->imageFactory->createFromEditForm(
-                    $newBackgroundImage,
+                    $filmDto->backgroundImage,
                     FileType::BACKGROUND_TYPE
                 );
                 $film->background_image_id = $backgroundImageId;
             }
 
-            if ($newBackgroundColor && $newBackgroundColor !== $film->backgroundColor->color) {
+            if ($filmDto->backgroundColor && $filmDto->backgroundColor !== $film->backgroundColor->color) {
                 $newColor = Color::query()->firstOrCreate([
-                    'color' => $newBackgroundColor
+                    'color' => $filmDto->backgroundColor
                 ]);
 
                 $film->background_color_id = $newColor->id;
             }
 
-            if ($newVideoLink && $newVideoLink !== $film->videoLink->link) {
+            if ($filmDto->videoLink && $filmDto->videoLink !== $film->videoLink->link) {
                 if ($film->videoLink->link) {
                     $film->videoLink()->delete();
                 }
-                $videoLinkId = $this->linkFactory->createNewLink($newVideoLink, LinkType::VIDEO_TYPE);
+                $videoLinkId = $this->linkFactory->createNewLink($filmDto->videoLink, LinkType::VIDEO_TYPE);
                 $film->video_link_id = $videoLinkId;
             }
 
-            if ($newPreviewVideoLink && $newPreviewVideoLink !== $film->previewVideoLink->link) {
+            if ($filmDto->previewVideoLink && $filmDto->previewVideoLink !== $film->previewVideoLink->link) {
                 if ($film->previewVideoLink->link) {
                     $film->previewVideoLink()->delete();
                 }
-                $previewVideoLinkId = $this->linkFactory->createNewLink($newPreviewVideoLink, LinkType::PREVIEW_TYPE);
+                $previewVideoLinkId = $this->linkFactory->createNewLink(
+                    $filmDto->previewVideoLink,
+                    LinkType::PREVIEW_TYPE
+                );
                 $film->preview_video_link_id = $previewVideoLinkId;
             }
 
-            if ($newDescription && $newDescription !== $film->description) {
-                $film->description = $newDescription;
+            if ($filmDto->description && $filmDto->description !== $film->description) {
+                $film->description = $filmDto->description;
             }
 
-            if ($newDirector && $newDirector !== $film->director->name) {
+            if ($filmDto->director && $filmDto->director !== $film->director->name) {
                 $newDirectorLink = Director::query()->firstOrCreate([
-                    'name' => $newDirector
+                    'name' => $filmDto->director
                 ]);
 
                 $film->director_id = $newDirectorLink->id;
             }
 
-            if ($newActors) {
-                $newActorIds = [];
-                foreach ($newActors as $newActor) {
-                    $actor = Actor::query()->firstOrCreate([
-                        'name' => $newActor
-                    ]);
-                    $newActorIds[] = $actor->id;
+            if ($filmDto->actors) {
+                $alreadyExistedActors = Actor::query()->whereIn('name', $filmDto->actors)->get();
+
+                $newActorIds = array_map(
+                    static fn ($actor) => $actor['id'],
+                    $alreadyExistedActors->toArray()
+                );
+
+                foreach ($filmDto->actors as $actor) {
+                    $isExisted = $alreadyExistedActors->contains('name', '=', $actor);
+                    if (!$isExisted) {
+                        $newActor = Actor::query()->create([
+                            'name' => $actor,
+                        ]);
+                        $newActorIds[] = $newActor->id;
+                    }
                 }
 
                 $film->actors()->sync($newActorIds);
             }
 
-            if ($newGenres) {
-                $newGenreIds = [];
-                foreach ($newGenres as $newGenre) {
-                    $genre = Genre::query()->firstOrCreate([
-                        'genre' => $newGenre
-                    ]);
-                    $newGenreIds[] = $genre->id;
+            if ($filmDto->genres) {
+                $alreadyExistedGenres = Genre::query()->whereIn('genre', $filmDto->genres)->get();
+
+                $newGenreIds = array_map(
+                    static fn ($genre) => $genre['id'],
+                    $alreadyExistedGenres->toArray()
+                );
+
+                foreach ($filmDto->genres as $genre) {
+                    $isExisted = $alreadyExistedGenres->contains('genre', '=', $genre);
+
+                    if (!$isExisted) {
+                        $newGenre = Genre::query()->create([
+                            'genre' => $genre,
+                        ]);
+                        $newGenreIds[] = $newGenre->id;
+                    }
                 }
 
                 $film->genres()->sync($newGenreIds);
             }
 
-            if ($newRunTime && $newRunTime !== $film->run_time) {
-                $film->run_time = $newRunTime;
+            if ($filmDto->runTime && $filmDto->runTime !== $film->run_time) {
+                $film->run_time = $filmDto->runTime;
             }
 
-            if ($newReleasedYear && $newReleasedYear !== $film->released) {
-                $film->released = $newReleasedYear;
+            if ($filmDto->released && $filmDto->released !== $film->released) {
+                $film->released = $filmDto->released;
             }
 
-            if ($newImdbId && $newImdbId !== $film->imdb_id) {
-                $film->imdb_id = $newImdbId;
+            if ($filmDto->imdbId && $filmDto->imdbId !== $film->imdb_id) {
+                $film->imdb_id = $filmDto->imdbId;
             }
 
-            if ($newStatus && $newStatus !== $film->status->status) {
-                $film->status_id = FilmStatus::whereStatus($newStatus)->value('id');
+            if ($filmDto->status && $filmDto->status !== $film->status->status) {
+                $film->status_id = FilmStatus::whereStatus($filmDto->status)->value('id');
             }
 
             $film->save();
 
             DB::commit();
 
-            if ($previousPosterImage && $newPosterImage !== $previousPosterImage) {
+            if ($previousPosterImage && $filmDto->posterImage !== $previousPosterImage) {
                 FileService::deleteFileFromStorage(substr($previousPosterImage, 4));
             }
 
-            if ($previousPreviewImage && $newPreviewImage !== $previousPreviewImage) {
+            if ($previousPreviewImage && $filmDto->previewImage !== $previousPreviewImage) {
                 FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
             }
 
-            if ($previousBackgroundImage && $newBackgroundImage !== $previousBackgroundImage) {
+            if ($previousBackgroundImage && $filmDto->backgroundImage !== $previousBackgroundImage) {
                 FileService::deleteFileFromStorage(substr($previousBackgroundImage, 4));
             }
 
@@ -239,7 +256,7 @@ class FilmRepository implements FilmRepositoryInterface
         $film->delete();
     }
 
-    public function findById(int $id, array $columns = ['*']): ?Model
+    public function findById(int $id, array $columns = ['*']): Model
     {
         return Film::with([
             'posterImage',
@@ -251,17 +268,17 @@ class FilmRepository implements FilmRepositoryInterface
             'director',
             'actors',
             'genres'
-        ])->find($id, $columns);
+        ])->where('id', '=', $id)->firstOrFail($columns);
     }
 
-    public function findByImdbId(string $imdbId, array $columns = ['*']): ?Model
+    public function findByImdbId(string $imdbId, array $columns = ['*']): Model
     {
         return $this->findBy('imdb_id', $imdbId, $columns);
     }
 
-    public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model
+    public function findBy(string $field, mixed $value, array $columns = ['*']): Model
     {
-        return Film::query()->where($field, '=', $value)->first($columns);
+        return Film::query()->where($field, '=', $value)->firstOrFail($columns);
     }
 
     public function paginateList(
@@ -304,7 +321,7 @@ class FilmRepository implements FilmRepositoryInterface
     {
         $genres = array_map(
             static fn ($genre) => $genre['genre'],
-            Film::whereId($id)?->first()->genres->toArray()
+            Film::whereId($id)->firstOrFail()->genres->toArray()
         );
 
         return Film::query()
@@ -330,7 +347,7 @@ class FilmRepository implements FilmRepositoryInterface
     {
         $filmIds = array_map(
             static fn ($film) => $film['id'],
-            User::whereId($userId)->first()?->favoriteFilms->toArray()
+            User::whereId($userId)->firstOrFail()->favoriteFilms->toArray()
         );
 
         return Film::query()
@@ -350,5 +367,220 @@ class FilmRepository implements FilmRepositoryInterface
                 perPage: self::DEFAULT_PAGE_SIZE,
                 page: self::DEFAULT_PAGE
             );
+    }
+
+    /**
+     * @param string $imdbId
+     * @param Dto $dto
+     * @return Model
+     * @throws \Exception
+     */
+    public function fillFilmInfo(string $imdbId, Dto $dto): Model
+    {
+        /** @var Film $updatedFilm */
+        $updatedFilm = $this->findByImdbId($imdbId);
+        /** @var OmdbFilmApiDto $omdbFilmApiDto */
+        $omdbFilmApiDto = $dto;
+
+        DB::beginTransaction();
+
+        try {
+            if ($omdbFilmApiDto->posterImage) {
+                $posterImage = $this->imageFactory->createFromExternalApi(
+                    $omdbFilmApiDto->posterImage,
+                    FileType::POSTER_TYPE,
+                    $omdbFilmApiDto->title
+                );
+
+                $previewImage = $this->imageFactory->createFromExternalApi(
+                    $omdbFilmApiDto->posterImage,
+                    FileType::PREVIEW_TYPE,
+                    $omdbFilmApiDto->title
+                );
+
+                $updatedFilm->poster_image_id = $posterImage->id;
+                $updatedFilm->preview_image_id = $previewImage->id;
+            }
+
+            if ($omdbFilmApiDto->released) {
+                $releasedYear = substr($omdbFilmApiDto->released, -4, 4);
+                $updatedFilm->released = (int)$releasedYear;
+            }
+
+            if ($omdbFilmApiDto->director) {
+                $directorId = Director::query()->firstOrCreate([
+                    'name' => $omdbFilmApiDto->director
+                ])->id;
+                $updatedFilm->director_id = $directorId;
+            }
+
+            if ($omdbFilmApiDto->runTime) {
+                $runtime = substr($omdbFilmApiDto->runTime, 0, -4);
+                $updatedFilm->run_time = (int)$runtime;
+            }
+
+            if ($omdbFilmApiDto->genres) {
+                $genres = explode(', ', $omdbFilmApiDto->genres);
+
+                $alreadyExistedGenres = Genre::query()->whereIn('genre', $genres)->get();
+
+                $newGenreIds = array_map(
+                    static fn ($genre) => $genre['id'],
+                    $alreadyExistedGenres->toArray()
+                );
+
+                foreach ($genres as $genre) {
+                    $isExisted = $alreadyExistedGenres->contains('genre', '=', $genre);
+                    if (!$isExisted) {
+                        $newGenre = Genre::query()->create([
+                            'genre' => $genre,
+                        ]);
+                        $newGenreIds[] = $newGenre->id;
+                    }
+                }
+
+                $updatedFilm->genres()->sync($newGenreIds);
+            }
+
+            if ($omdbFilmApiDto->actors) {
+                $actors = explode(', ', $omdbFilmApiDto->actors);
+
+                $alreadyExistedActors = Actor::query()->whereIn('name', $actors)->get();
+
+                $newActorIds = array_map(
+                    static fn ($actor) => $actor['id'],
+                    $alreadyExistedActors->toArray()
+                );
+
+                foreach ($actors as $actor) {
+                    $isExisted = $alreadyExistedActors->contains('name', '=', $actor);
+                    if (!$isExisted) {
+                        $newActor = Actor::query()->create([
+                            'name' => $actor,
+                        ]);
+                        $newActorIds[] = $newActor->id;
+                    }
+                }
+
+                $updatedFilm->actors()->sync($newActorIds);
+            }
+
+            if ($omdbFilmApiDto->title) {
+                $updatedFilm->name = $omdbFilmApiDto->title;
+            }
+
+            if ($omdbFilmApiDto->description) {
+                $updatedFilm->description = $omdbFilmApiDto->description;
+            }
+
+            if ($omdbFilmApiDto->rating) {
+                $updatedFilm->rating = (float)$omdbFilmApiDto->rating;
+            }
+
+            if ($omdbFilmApiDto->amountVotes) {
+                $updatedFilm->vote_amount = (int)str_replace(',', '', $omdbFilmApiDto->amountVotes);
+            }
+
+            $updatedFilm->status_id = FilmStatus::whereStatus(Film::MODERATE_FILM_STATUS)->value('id');
+
+            $updatedFilm->save();
+
+            DB::commit();
+
+            if ($omdbFilmApiDto->posterImage){
+                FileService::addFileToStorage(
+                    $omdbFilmApiDto->posterImage,
+                    substr($posterImage->link, 4)
+                );
+
+                FileService::addFileToStorage(
+                    $omdbFilmApiDto->posterImage,
+                    substr($previewImage->link, 4)
+                );
+            }
+
+            return $updatedFilm;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param string $imdbId
+     * @param Dto $dto
+     * @return Model
+     * @throws \Exception
+     */
+    public function fillAdditionalFilmInfo(string $imdbId, Dto $dto): Model
+    {
+        /** @var Film $updatedFilm */
+        $updatedFilm = $this->findByImdbId($imdbId);
+        /** @var HtmlAcademyFilmApiDto $htmlAcademyFilmApiDto */
+        $htmlAcademyFilmApiDto = $dto;
+
+        $previousPreviewImage = $updatedFilm->previewImage->link ?? null;
+
+        DB::beginTransaction();
+
+        try {
+            if ($htmlAcademyFilmApiDto->previewImage) {
+                $updatedFilm->previewImage()->delete();
+
+                $newPreviewImage = $this->imageFactory->createFromExternalApi(
+                    $htmlAcademyFilmApiDto->previewImage,
+                    FileType::PREVIEW_TYPE,
+                    $htmlAcademyFilmApiDto->title
+                );
+
+                $updatedFilm->preview_image_id = $newPreviewImage->id;
+            }
+
+            if ($htmlAcademyFilmApiDto->backgroundImage) {
+                $backgroundImage = $this->imageFactory->createFromExternalApi(
+                    $htmlAcademyFilmApiDto->backgroundImage,
+                    FileType::BACKGROUND_TYPE,
+                    $htmlAcademyFilmApiDto->title
+                );
+
+                $updatedFilm->background_image_id = $backgroundImage->id;
+            }
+
+            if ($htmlAcademyFilmApiDto->videoLink) {
+                $videoLinkId = $this->linkFactory->createNewLink($htmlAcademyFilmApiDto->videoLink, LinkType::VIDEO_TYPE);
+                $updatedFilm->video_link_id = $videoLinkId;
+            }
+
+            if ($htmlAcademyFilmApiDto->previewVideoLink) {
+                $previewVideoLinkId = $this->linkFactory->createNewLink($htmlAcademyFilmApiDto->previewVideoLink, LinkType::PREVIEW_TYPE);
+                $updatedFilm->preview_video_link_id = $previewVideoLinkId;
+            }
+
+            $updatedFilm->save();
+
+            DB::commit();
+
+            if ($htmlAcademyFilmApiDto->previewImage){
+                FileService::addFileToStorage(
+                    $htmlAcademyFilmApiDto->previewImage,
+                    substr($newPreviewImage->link, 4)
+                );
+                if ($previousPreviewImage) {
+                    FileService::deleteFileFromStorage(substr($previousPreviewImage, 4));
+                }
+            }
+
+            if ($htmlAcademyFilmApiDto->backgroundImage){
+                FileService::addFileToStorage(
+                    $htmlAcademyFilmApiDto->backgroundImage,
+                    substr($backgroundImage->link, 4)
+                );
+            }
+
+            return $updatedFilm;
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 }

@@ -60,10 +60,6 @@ class FilmsController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if (!$user) {
-            return new UnauthorizedResponse();
-        }
-
         $userId = $user->id;
 
         $paginatedFavoriteFilms = $this->filmRepository->favoriteFilms($userId);
@@ -80,12 +76,6 @@ class FilmsController extends Controller
      */
     public function getSimilarFilms(int $filmId): BaseResponse
     {
-        $film = Film::whereId($filmId)->first();
-
-        if (!$film) {
-            return new NotFoundResponse();
-        }
-
         $films = $this->filmRepository->similarFilms($filmId);
 
         return new SuccessResponse(data: $films);

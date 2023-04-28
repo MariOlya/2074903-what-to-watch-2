@@ -7,12 +7,8 @@ namespace App\Http\Controllers;
 use App\Factories\Dto\ReviewDto;
 use App\Factories\Interfaces\ReviewFactoryInterface;
 use App\Http\Requests\ReviewRequest;
-use App\Http\Responses\BadRequestResponse;
 use App\Http\Responses\BaseResponse;
-use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
-use App\Models\Film;
 use App\Models\Review;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
@@ -43,21 +39,27 @@ class ReviewController extends Controller
     public function addNewReview(ReviewRequest $request, int $filmId): BaseResponse
     {
         $params = $request->validated();
-        $newVote = $params['rating'] ?? null;
-
         /** @var User $user */
         $user = Auth::user();
+
+        $reviewDto = new ReviewDto(
+            text: $params['text'] ?? null,
+            rating: $params['rating'] ?? null,
+            reviewId: $params['comment_id'] ?? null,
+            userId: $user->id,
+            filmId: $filmId
+        );
+
+        $newVote = $reviewDto->rating;
 
         //Add review + update rating
         DB::beginTransaction();
 
         try {
-            $newReview = $this->reviewFactory->createNewReview(
-                new ReviewDto($params, $user->id, $filmId)
-            );
+            $newReview = $this->reviewFactory->createNewReview($reviewDto);
 
             if ($newVote) {
-                $this->filmRepository->updateRating($filmId, (int)$newVote);
+                $this->filmRepository->updateRating($filmId, $newVote);
             }
 
             DB::commit();
@@ -81,25 +83,27 @@ class ReviewController extends Controller
      */
     public function updateReview(ReviewRequest $request, Review $review): BaseResponse
     {
-        /** @var Review $currentReview */
-        $currentReview = $request->findReview();
-
         $params = $request->validated();
+        $reviewDto = new ReviewDto(
+            text: $params['text'] ?? null,
+            rating: $params['rating'] ?? null,
+            reviewId: $params['comment_id'] ?? null,
+        );
 
-        $reviewId = $currentReview->id;
-        $filmId = $currentReview->film_id;
+        $reviewId = $review->id;
+        $filmId = $review->film_id;
 
-        $latestVote = $currentReview->rating ?? null;
-        $newVote = $params['rating'] ?? null;
+        $latestVote = $review->rating ?? null;
+        $newVote = $reviewDto->rating;
 
         //Change review + update rating
         DB::beginTransaction();
 
         try {
-            $updatedReview = $this->reviewRepository->update($reviewId, new ReviewDto($params));
+            $updatedReview = $this->reviewRepository->update($reviewId, $reviewDto);
 
             if ($newVote) {
-                $this->filmRepository->updateRating($filmId, (int)$newVote, $latestVote);
+                $this->filmRepository->updateRating($filmId, $newVote, $latestVote);
             }
 
             DB::commit();
@@ -120,19 +124,13 @@ class ReviewController extends Controller
      * @param Review $review
      * @return BaseResponse
      * @throws AuthorizationException
+     * @throws \Exception
      */
     public function deleteReview(Request $request, Review $review): BaseResponse
     {
-        /** @var Review $currentReview */
-        $currentReview = Review::query()->find($request->route('comment'));
+        $this->authorize('delete', $review);
 
-        if (!$currentReview) {
-            return new NotFoundResponse();
-        }
-
-        $this->authorize('delete', $currentReview);
-
-        $reviewId = $currentReview->id;
+        $reviewId = $review->id;
 
         //Soft delete review + all child comments
         DB::beginTransaction();

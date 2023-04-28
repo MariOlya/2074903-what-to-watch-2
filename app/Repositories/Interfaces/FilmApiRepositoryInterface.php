@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Custom;
+namespace App\Repositories\Interfaces;
 
-interface MovieInfoRepository
+interface FilmApiRepositoryInterface
 {
     public function getMovieInfoById(string $id) : array;
 }

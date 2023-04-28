@@ -20,7 +20,7 @@ class GenreRepository implements GenreRepositoryInterface
 
     public function update(int $id, string $genre): Model
     {
-        $updatedGenre = Genre::query()->find($id);
+        $updatedGenre = Genre::whereId($id)->firstOrFail();
 
         if ($genre !== $updatedGenre->genre) {
             $updatedGenre->genre = $genre;

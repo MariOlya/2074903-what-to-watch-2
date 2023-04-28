@@ -16,17 +16,15 @@ class ReviewFactory implements ReviewFactoryInterface
     }
 
     /**
-     * @param int $filmId
-     * @param int $userId
      * @param ReviewDto $reviewDto
      * @return Review
      * @throws InternalErrorException
      */
     public function createNewReview(ReviewDto $reviewDto): Review
     {
-        $this->review->text = $reviewDto->getParams()['text'];
-        $this->review->rating = $reviewDto->getParams()['rating'] ?? null;
-        $this->review->review_id = $reviewDto->getParams()['comment_id'] ?? null;
+        $this->review->text = $reviewDto->text;
+        $this->review->rating = $reviewDto->rating;
+        $this->review->review_id = $reviewDto->reviewId;
         $this->review->film_id = $reviewDto->filmId;
         $this->review->user_id = $reviewDto->userId;
 

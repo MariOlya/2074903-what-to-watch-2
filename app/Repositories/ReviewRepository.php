@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Factories\Dto\Dto;
+use App\Factories\Dto\ReviewDto;
 use App\Models\Review;
 use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,17 +23,24 @@ class ReviewRepository implements ReviewRepositoryInterface
 
     }
 
+    /**
+     * @param int $id
+     * @param Dto $dto
+     * @return Model
+     * @throws InternalErrorException
+     */
     public function update(int $id, Dto $dto): Model
     {
         $review = Review::whereId($id)->firstOrFail();
+        /** @var ReviewDto $reviewDto */
+        $reviewDto = $dto;
 
-        $newText = $dto->getParams()['text'];
-        $newRating = $dto->getParams()['rating'] ?? null;
+        if ($reviewDto->text) {
+            $review->text = $reviewDto->text;
+        }
 
-        $review->text = $newText;
-
-        if ($newRating) {
-            $review->rating = $newRating;
+        if ($reviewDto->rating) {
+            $review->rating = $reviewDto->rating;
         }
 
         if (!$review->save()) {
@@ -48,18 +56,16 @@ class ReviewRepository implements ReviewRepositoryInterface
         $review->delete();
     }
 
-    public function findById(int $id, array $columns = ['*']): ?Model
+    public function findById(int $id, array $columns = ['*']): Model
     {
-        return Review::with([
-            'comments',
-        ])->find($id, $columns);
+        return $this->findBy('id', $id, $columns);
     }
 
-    public function findBy(string $field, mixed $value, array $columns = ['*']): ?Model
+    public function findBy(string $field, mixed $value, array $columns = ['*']): Model
     {
         return Review::with([
             'comments',
-        ])->where($field, '=', $value)->first($columns);
+        ])->where($field, '=', $value)->firstOrFail($columns);
     }
 
     public function allForFilm(

@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 
 class UpdatingFilmRequest extends FormRequest
 {
-    public function findFilm(): ?Film
+    private function findFilm(): ?Film
     {
         return Film::query()->find($this->route('id'));
     }
@@ -88,9 +88,10 @@ class UpdatingFilmRequest extends FormRequest
                 'required',
                 function ($attribute, $value, $fail) {
                     $rule = Rule::unique(Film::class);
+                    $film = $this->findFilm();
 
-                    if ($this->findFilm()?->imdb_id === $value) {
-                        return $rule->ignore($this->findFilm()?->id);
+                    if ($film?->imdb_id === $value) {
+                        return $rule->ignore($film?->id);
                     }
 
                     return $rule;
