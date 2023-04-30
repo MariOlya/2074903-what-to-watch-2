@@ -22,7 +22,8 @@ class UserController extends Controller
     public function __construct(
         readonly UserFactoryInterface $userFactory,
         readonly UserRepositoryInterface $userRepository,
-        readonly AvatarFactoryInterface $avatarFactory
+        readonly AvatarFactoryInterface $avatarFactory,
+        readonly FileService $fileService
     )
     {
     }
@@ -41,7 +42,6 @@ class UserController extends Controller
 
         DB::beginTransaction();
         try {
-
             if ($file) {
                 $name = $file['file']->hashName();
                 $newAvatar = $this->avatarFactory->createNewAvatar($name);
@@ -93,7 +93,6 @@ class UserController extends Controller
         return new SuccessResponse(
             data: [
                 'user' => $user,
-                'avatar' => $avatar
             ]
         );
     }
@@ -103,6 +102,7 @@ class UserController extends Controller
      *
      * @param UserRequest $request
      * @return BaseResponse
+     * @throws \Exception
      */
     public function updateUser(UserRequest $request): BaseResponse
     {
@@ -111,22 +111,45 @@ class UserController extends Controller
 
         $userId = $user->id;
         $params = $request->safe()->except('file');
-        $userDto = new UserDto(
-            name: $params['name'] ?? null,
-            email: $params['email'] ?? null,
-            password: $params['password'] ?? null,
-        );
+        $file = $request->safe()->only('file');
 
-        // add the rule here to save File and add file id to User
-        // $fileParams = $request->safe()->only('file');
+        DB::beginTransaction();
+        try {
+            if ($file) {
+                $name = $file['file']->hashName();
+                $newAvatar = $this->avatarFactory->createNewAvatar($name);
+                $avatarFileName = substr($newAvatar->link, 8);
+                $avatarId = $newAvatar->id;
 
-        $updatedUser = $this->userRepository->update($userId, $userDto);
+                $previousAvatarPath = $user->avatar->link;
+                $user->avatar()->delete();
+            }
 
-        return new SuccessResponse(
-            data: [
-                'updatedUser' => $updatedUser,
-//                'newAvatar' => $newAvatar ?? null
-            ]
-        );
+            $userDto = new UserDto(
+                name: $params['name'] ?? null,
+                email: $params['email'] ?? null,
+                password: $params['password'] ?? null,
+                fileId: $avatarId ?? null
+            );
+
+            $updatedUser = $this->userRepository->update($userId, $userDto);
+
+            DB::commit();
+
+            $request->file('file')?->storeAs(FileService::PUBLIC_STORAGE.'/avatars', $avatarFileName);
+            if (isset($previousAvatarPath)) {
+                $this->fileService::deleteFileFromStorage(substr($previousAvatarPath, 8), FileService::FOLDER_AVATARS);
+            }
+
+            return new SuccessResponse(
+                data: [
+                    'updatedUser' => $updatedUser,
+                    'newAvatar' => $newAvatar->link ?? null
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 }
