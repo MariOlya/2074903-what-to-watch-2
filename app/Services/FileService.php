@@ -31,6 +31,7 @@ class FileService
 
     /**
      * @param string $link
+     * @param string $path
      * @param string $folder
      * @param string $disk
      * @return void

@@ -5,21 +5,24 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Factories\Dto\UserDto;
+use App\Factories\Interfaces\AvatarFactoryInterface;
 use App\Factories\Interfaces\UserFactoryInterface;
 use App\Http\Requests\UserRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Services\FileService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
     public function __construct(
         readonly UserFactoryInterface $userFactory,
-        readonly UserRepositoryInterface $userRepository
+        readonly UserRepositoryInterface $userRepository,
+        readonly AvatarFactoryInterface $avatarFactory
     )
     {
     }
@@ -29,30 +32,50 @@ class UserController extends Controller
      *
      * @param UserRequest $request
      * @return BaseResponse
+     * @throws \Exception
      */
     public function register(UserRequest $request): BaseResponse
     {
         $params = $request->safe()->except('file');
-        $userDto = new UserDto(
-            name: $params['name'] ?? null,
-            email: $params['email'] ?? null,
-            password: $params['password'] ?? null
-        );
+        $file = $request->safe()->only('file');
 
-        // add the rule here to save File and add file id to User
-        // $fileParams = $request->safe()->only('file');
+        DB::beginTransaction();
+        try {
 
-        $newUser = $this->userFactory->createNewUser($userDto);
+            if ($file) {
+                $name = $file['file']->hashName();
+                $newAvatar = $this->avatarFactory->createNewAvatar($name);
+                $avatarFileName = substr($newAvatar->link, 8);
+                $avatarId = $newAvatar->id;
+            }
 
-        $token = $newUser->createToken('auth-token');
+            $userDto = new UserDto(
+                name: $params['name'] ?? null,
+                email: $params['email'] ?? null,
+                password: $params['password'] ?? null,
+                fileId: $avatarId ?? null
+            );
 
-        return new SuccessResponse(
-            codeResponse: Response::HTTP_CREATED,
-            data: [
-                'user' => $newUser,
-                'token' => $token->plainTextToken,
-            ]
-        );
+            $newUser = $this->userFactory->createNewUser($userDto);
+
+            DB::commit();
+
+            $request->file('file')?->storeAs(FileService::PUBLIC_STORAGE.'/avatars', $avatarFileName);
+
+            $token = $newUser->createToken('auth-token');
+
+            return new SuccessResponse(
+                codeResponse: Response::HTTP_CREATED,
+                data: [
+                    'user' => $newUser,
+                    'avatar' => $newAvatar->link ?? null,
+                    'token' => $token->plainTextToken,
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
     /**
