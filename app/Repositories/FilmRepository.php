@@ -587,4 +587,9 @@ class FilmRepository implements FilmRepositoryInterface
             throw $e;
         }
     }
+
+    public function findPromo(array $columns = ['*']): Model
+    {
+        return Film::wherePromo('true')->firstOrFail($columns);
+    }
 }

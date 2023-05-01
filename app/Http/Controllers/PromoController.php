@@ -8,14 +8,36 @@ use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnauthorizedResponse;
+use App\Models\Film;
+use App\Models\User;
+use App\Repositories\Interfaces\FilmRepositoryInterface;
 use Illuminate\Http\Request;
 
 class PromoController extends Controller
 {
-    public function getPromoFilm(): BaseResponse
+
+    public function __construct(
+        readonly FilmRepositoryInterface $filmRepository
+    )
     {
-        //
-        return new SuccessResponse();
+    }
+
+    public function getPromoFilm(Request $request): BaseResponse
+    {
+        /** @var Film $film */
+        $film = $this->filmRepository->findPromo();
+        $filmId = $film->id;
+
+        /** @var User $currentUser */
+        $currentUser = $request->user('sanctum');
+
+        if ($currentUser) {
+            $isFavorite = (bool)$currentUser->favoriteFilms()->where('film_id', '=', $filmId)->first();
+            $film = $film->toArray();
+            $film['is_favorite'] = $isFavorite;
+        }
+
+        return new SuccessResponse(data: $film);
     }
 
     public function setPromoFilm(Request $request, int $filmId): BaseResponse
