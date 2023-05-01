@@ -32,4 +32,12 @@ class FilmPolicy
     {
         return $user->userRole->role === User::MODERATOR_ROLE;
     }
+
+    /**
+     * Determine whether the user can set promo for the model.
+     */
+    public function setPromo(User $user, Film $film): bool
+    {
+        return $user->userRole->role === User::MODERATOR_ROLE;
+    }
 }
