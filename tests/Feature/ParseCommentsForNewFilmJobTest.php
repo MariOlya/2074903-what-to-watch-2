@@ -56,7 +56,7 @@ class ParseCommentsForNewFilmJobTest extends TestCase
      * @throws \JsonException|\PHPUnit\Framework\MockObject\Exception
      * @throws \Exception
      */
-    public function testAddParsedCommentsFromExternalApi(): void
+    public function testCanAddParsedCommentsFromExternalApi(): void
     {
         $imdb = 'tt0382932';
 
@@ -94,7 +94,7 @@ class ParseCommentsForNewFilmJobTest extends TestCase
      * @throws \JsonException|\PHPUnit\Framework\MockObject\Exception
      * @throws \Exception
      */
-    public function testAddParsedInfoWithNAAnswerFromExternalApi(): void
+    public function testCanNotAddCommentsWithoutRatingFromExternalApi(): void
     {
         $imdb = 'tt0382932';
 

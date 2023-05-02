@@ -4,7 +4,9 @@ namespace App\Jobs;
 
 use App\Factories\Dto\ReviewDto;
 use App\Factories\Interfaces\ReviewFactoryInterface;
+use App\Factories\ReviewFactory;
 use App\Models\Film;
+use App\Models\Review;
 use App\Repositories\Interfaces\CommentsApiRepositoryInterface;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -14,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class ParseNewCommentsJob implements ShouldQueue
 {
@@ -24,10 +27,10 @@ class ParseNewCommentsJob implements ShouldQueue
 
     /**
      * Execute the job.
+     * @throws InternalErrorException
      */
     public function handle(
-        CommentsApiRepositoryInterface $commentsApiRepository,
-        ReviewFactoryInterface $reviewFactory
+        CommentsApiRepositoryInterface $commentsApiRepository
     ): void {
         $response = $commentsApiRepository->getAllNewComments();
 
@@ -53,7 +56,7 @@ class ParseNewCommentsJob implements ShouldQueue
                         $newReviewDto->text !== null &&
                         $newReviewDto->rating !== null
                 ) {
-                        $reviewFactory->createNewReview($newReviewDto);
+                        (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
                     }
                 }
             }

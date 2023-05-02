@@ -46,9 +46,9 @@ class ReviewController extends Controller
         $reviewDto = new ReviewDto(
             text: $params['text'] ?? null,
             rating: $params['rating'] ?? null,
+            filmId: $filmId,
             reviewId: $params['comment_id'] ?? null,
-            userId: $user->id,
-            filmId: $filmId
+            userId: $user->id
         );
 
         $newVote = $reviewDto->rating;
@@ -88,7 +88,8 @@ class ReviewController extends Controller
         $reviewDto = new ReviewDto(
             text: $params['text'] ?? null,
             rating: $params['rating'] ?? null,
-            reviewId: $params['comment_id'] ?? null,
+            filmId: null,
+            reviewId: $params['comment_id'] ?? null
         );
 
         $reviewId = $review->id;
