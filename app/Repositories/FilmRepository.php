@@ -590,6 +590,16 @@ class FilmRepository implements FilmRepositoryInterface
 
     public function findPromo(array $columns = ['*']): ?Model
     {
-        return Film::wherePromo(1)->first($columns);
+        return Film::with([
+            'posterImage',
+            'previewImage',
+            'backgroundImage',
+            'backgroundColor',
+            'videoLink',
+            'previewVideoLink',
+            'director',
+            'actors',
+            'genres'
+        ])->where('promo', '=', 1)->first($columns);
     }
 }
