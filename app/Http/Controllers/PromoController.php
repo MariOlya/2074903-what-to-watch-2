@@ -56,6 +56,7 @@ class PromoController extends Controller
      * @param int $filmId
      * @return BaseResponse
      * @throws AuthorizationException
+     * @throws \Exception
      */
     public function setPromoFilm(int $filmId): BaseResponse
     {

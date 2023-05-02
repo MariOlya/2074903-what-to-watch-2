@@ -3,8 +3,9 @@
 namespace App\Jobs;
 
 use App\Factories\Dto\ReviewDto;
-use App\Factories\Interfaces\ReviewFactoryInterface;
+use App\Factories\ReviewFactory;
 use App\Models\Film;
+use App\Models\Review;
 use App\Repositories\Interfaces\CommentsApiRepositoryInterface;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -13,7 +14,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class ParseCommentsForNewFilmJob implements ShouldQueue
 {
@@ -32,10 +35,10 @@ class ParseCommentsForNewFilmJob implements ShouldQueue
 
     /**
      * Execute the job.
+     * @throws InternalErrorException
      */
     public function handle(
         CommentsApiRepositoryInterface $commentsApiRepository,
-        ReviewFactoryInterface $reviewFactory,
     ): void {
         $response = $commentsApiRepository->getCommentsByFilmImdbId($this->imdbId);
 
@@ -50,18 +53,26 @@ class ParseCommentsForNewFilmJob implements ShouldQueue
         $filmId = Film::whereImdbId($this->imdbId)->value('id');
 
         if (!empty($comments)) {
-            foreach ($comments as $comment) {
-                $newReviewDto = new ReviewDto(
-                    text: $comment['text'] ?? null,
-                    rating: $comment['rating'] ?? null,
-                    filmId: $filmId,
-                );
-                if (
-                    $newReviewDto->text !== null &&
-                    $newReviewDto->rating !== null
-                ) {
-                    $reviewFactory->createNewReview($newReviewDto);
+            DB::beginTransaction();
+
+            try {
+                foreach ($comments as $comment) {
+                    $newReviewDto = new ReviewDto(
+                        text: $comment['text'] ?? null,
+                        rating: $comment['rating'] ?? null,
+                        filmId: $filmId,
+                    );
+                    if (
+                        $newReviewDto->text !== null &&
+                        $newReviewDto->rating !== null
+                    ) {
+                        (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
+                    }
                 }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
         }
     }
