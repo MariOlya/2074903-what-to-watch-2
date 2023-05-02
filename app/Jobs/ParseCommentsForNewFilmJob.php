@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Factories\Dto\ReviewDto;
 use App\Factories\Interfaces\ReviewFactoryInterface;
+use App\Models\Film;
 use App\Repositories\Interfaces\CommentsApiRepositoryInterface;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -36,7 +37,7 @@ class ParseCommentsForNewFilmJob implements ShouldQueue
         CommentsApiRepositoryInterface $commentsApiRepository,
         ReviewFactoryInterface $reviewFactory,
     ): void {
-        $response = $commentApiRepository->getCommentsByFilmImdbId($this->imdbId);
+        $response = $commentsApiRepository->getCommentsByFilmImdbId($this->imdbId);
 
         if ($response['code'] !== 200) {
             throw new \RuntimeException(
@@ -46,18 +47,18 @@ class ParseCommentsForNewFilmJob implements ShouldQueue
         }
 
         $comments = (array)$response['data'];
+        $filmId = Film::whereImdbId($this->imdbId)->value('id');
 
         if (!empty($comments)) {
             foreach ($comments as $comment) {
                 $newReviewDto = new ReviewDto(
                     text: $comment['text'] ?? null,
                     rating: $comment['rating'] ?? null,
-                    filmId: $comment['imdb_id'] ?? null,
+                    filmId: $filmId,
                 );
                 if (
                     $newReviewDto->text !== null &&
-                    $newReviewDto->rating !== null &&
-                    $newReviewDto->filmId !== null
+                    $newReviewDto->rating !== null
                 ) {
                     $reviewFactory->createNewReview($newReviewDto);
                 }

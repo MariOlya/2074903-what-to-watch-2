@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Factories\Dto\ReviewDto;
 use App\Factories\Interfaces\ReviewFactoryInterface;
+use App\Models\Film;
 use App\Repositories\Interfaces\CommentsApiRepositoryInterface;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -41,17 +42,19 @@ class ParseNewCommentsJob implements ShouldQueue
 
         if (!empty($comments)) {
             foreach ($comments as $comment) {
-                $newReviewDto = new ReviewDto(
-                    text: $comment['text'] ?? null,
-                    rating: $comment['rating'] ?? null,
-                    filmId: $comment['imdb_id'] ?? null,
-                );
-                if (
-                    $newReviewDto->text !== null &&
-                    $newReviewDto->rating !== null &&
-                    $newReviewDto->filmId !== null
+                $film = Film::whereImdbId($comment['imdb_id'])->first();
+                if ($film) {
+                    $newReviewDto = new ReviewDto(
+                        text: $comment['text'] ?? null,
+                        rating: $comment['rating'] ?? null,
+                        filmId: $film->id,
+                    );
+                    if (
+                        $newReviewDto->text !== null &&
+                        $newReviewDto->rating !== null
                 ) {
-                    $reviewFactory->createNewReview($newReviewDto);
+                        $reviewFactory->createNewReview($newReviewDto);
+                    }
                 }
             }
         }
