@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\NotFoundResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
 use App\Models\Film;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
@@ -34,6 +33,11 @@ class PromoController extends Controller
     {
         /** @var Film $film */
         $film = $this->filmRepository->findPromo();
+
+        if (!$film) {
+            return new NotFoundResponse();
+        }
+
         $filmId = $film->id;
 
         /** @var User $currentUser */
@@ -49,12 +53,11 @@ class PromoController extends Controller
     }
 
     /**
-     * @param Request $request
      * @param int $filmId
      * @return BaseResponse
      * @throws AuthorizationException
      */
-    public function setPromoFilm(Request $request, int $filmId): BaseResponse
+    public function setPromoFilm(int $filmId): BaseResponse
     {
         /** @var Film $currentFilm */
         $currentFilm = $this->filmRepository->findById($filmId);
@@ -62,11 +65,14 @@ class PromoController extends Controller
 
         DB::beginTransaction();
         try {
-            $currentFilm->update(['promo' => true]);
             if ($previousPromoFilm = $this->filmRepository->findPromo()) {
                 $previousPromoFilm->update(['promo' => false]);
             }
+
+            $currentFilm->update(['promo' => true]);
+
             DB::commit();
+
             return new SuccessResponse(data: $currentFilm);
         } catch (\Exception $e) {
             DB::rollBack();

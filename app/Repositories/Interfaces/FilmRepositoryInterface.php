@@ -25,5 +25,5 @@ interface FilmRepositoryInterface extends BaseRepositoryInterface
 
     public function fillAdditionalFilmInfo(string $imdbId, Dto $dto): Model;
 
-    public function findPromo(array $columns = ['*']): Model;
+    public function findPromo(array $columns = ['*']): ?Model;
 }
