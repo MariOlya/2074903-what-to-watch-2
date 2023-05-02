@@ -29,7 +29,6 @@ class ParseFilmInfoJob implements ShouldQueue
      */
     public function __construct(
         readonly string $imdbId,
-
     ) {
     }
 

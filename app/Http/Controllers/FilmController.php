@@ -11,6 +11,7 @@ use App\Http\Requests\UpdatingFilmRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
 use App\Http\Responses\UnprocessableResponse;
+use App\Jobs\ParseCommentsForNewFilmJob;
 use App\Jobs\ParseFilmInfoJob;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
@@ -113,6 +114,7 @@ class FilmController extends Controller
         $newFilm = $this->filmFactory->createNewFilm($imdbId);
 
         ParseFilmInfoJob::dispatch($imdbId);
+        ParseCommentsForNewFilmJob::dispatch($imdbId);
 
         return new SuccessResponse(
             codeResponse: Response::HTTP_CREATED,

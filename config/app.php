@@ -182,7 +182,7 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         \Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
-        \App\Providers\MovieInfoProvider::class,
+        \App\Providers\ExternalApiProvider::class,
         \App\Providers\FactoryProvider::class,
         \App\Providers\RepositoryProvider::class,
 
