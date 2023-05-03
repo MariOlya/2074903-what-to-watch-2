@@ -42,7 +42,7 @@ class UserControllerTest extends TestCase
         $this->assertNotEmpty($avatar);
     }
 
-    public function testCanUpdateUser(): void
+    public function testCanUpdateUserWithoutPreviousAvatar(): void
     {
         Storage::fake('local');
         $file = UploadedFile::fake()->create('avatar.jpeg');
@@ -75,6 +75,53 @@ class UserControllerTest extends TestCase
         $this->assertNotEmpty($updatedUser);
         $this->assertEquals($userId, $updatedUser->id);
         $this->assertNotEquals($userEmail, $updatedUser->email);
+        $this->assertNotEmpty($avatar);
+    }
+
+    public function testCanUpdateUserWithPreviousAvatar(): void
+    {
+        Storage::fake('local');
+        $fileFirst = UploadedFile::fake()->create('avatar.jpeg');
+
+        $parametersFirst = [
+            'name' => 'Example User',
+            'email' => 'some@google.com',
+            'password' => '12345678',
+            'password_confirmation' => '12345678',
+            'file' => $fileFirst,
+        ];
+
+        $this->postJson('/api/register', $parametersFirst)
+            ->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonStructure([
+                'data'
+            ]);
+
+        $user = User::whereEmail($parametersFirst['email'])->first();
+
+        $fileSecond = UploadedFile::fake()->create('avatar-new.jpeg');
+
+        $parametersSecond = [
+            'name' => 'Example User',
+            'email' => 'some@google.com',
+            'file' => $fileSecond,
+            '_method' => 'PATCH'
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/api/user', $parametersSecond)
+            ->assertStatus(Response::HTTP_OK)
+            ->assertJsonStructure([
+                'data'
+            ]);
+
+        $updatedUser = User::whereEmail($parametersSecond['email'])->first();
+        $avatar = $updatedUser->avatar;
+
+        $this->assertNotEmpty($updatedUser);
+        $this->assertEquals($user->id, $updatedUser->id);
+        $this->assertNotEquals($user->avatar, $updatedUser->avatar);
+        $this->assertEquals($user->email, $updatedUser->email);
         $this->assertNotEmpty($avatar);
     }
 }
