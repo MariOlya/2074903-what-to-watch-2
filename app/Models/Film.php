@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Rennokki\QueryCache\Traits\QueryCacheable;
 
 /**
  * App\Models\Film
@@ -77,14 +78,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Film extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes, QueryCacheable;
 
     public const FILM_DEFAULT_STATUS = 'ready';
     public const NEW_FILM_STATUS = 'pending';
     public const MODERATE_FILM_STATUS = 'moderate';
     public const FILM_DEFAULT_ORDER_BY = 'released';
     public const FILM_DEFAULT_ORDER_TO = 'DESC';
+
+    public $cacheFor = 24*60*60;
+    public $cacheTags = ['film'];
+
+    protected static $flushCacheOnUpdate = true;
 
     public $fillable = [
         'rating',
@@ -104,6 +109,26 @@ class Film extends Model
         'imdb_id',
         'promo'
     ];
+
+    protected function cacheForValue()
+    {
+        if (request()?->user()?->userRole->role === User::ADMIN_ROLE) {
+            return null;
+        }
+
+        return $this->cacheFor;
+    }
+
+    public function getCacheTagsToInvalidateOnUpdate($relation = null, $pivotedModels = null): array
+    {
+        return [
+            "film:{$this->id}:file",
+            "film:{$this->id}:color",
+            "film:{$this->id}:link",
+            "film:{$this->id}:director",
+            'film',
+        ];
+    }
 
     public function posterImage(): BelongsTo
     {
