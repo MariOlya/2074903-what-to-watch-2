@@ -15,6 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
@@ -44,21 +45,28 @@ class ParseNewCommentsJob implements ShouldQueue
         $comments = (array)$response['data'];
 
         if (!empty($comments)) {
-            foreach ($comments as $comment) {
-                $film = Film::whereImdbId($comment['imdb_id'])->first();
-                if ($film) {
-                    $newReviewDto = new ReviewDto(
-                        text: $comment['text'] ?? null,
-                        rating: $comment['rating'] ?? null,
-                        filmId: $film->id,
-                    );
-                    if (
-                        $newReviewDto->text !== null &&
-                        $newReviewDto->rating !== null
-                ) {
-                        (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
+            DB::beginTransaction();
+            try {
+                foreach ($comments as $comment) {
+                    $film = Film::whereImdbId($comment['imdb_id'])->first();
+                    if ($film) {
+                        $newReviewDto = new ReviewDto(
+                            text: $comment['text'] ?? null,
+                            rating: $comment['rating'] ?? null,
+                            filmId: $film->id,
+                        );
+                        if (
+                            $newReviewDto->text !== null &&
+                            $newReviewDto->rating !== null
+                    ) {
+                            (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
+                        }
                     }
                 }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
         }
     }
