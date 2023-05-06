@@ -53,27 +53,38 @@ class ParseCommentsForNewFilmJob implements ShouldQueue
         $filmId = Film::whereImdbId($this->imdbId)->value('id');
 
         if (!empty($comments)) {
-            DB::beginTransaction();
+            $commentsWithAllRequiredData = array_filter(
+                $comments,
+                static function ($comment) {
+                    $imdbId = $comment['imdb_id'] ?? null;
+                    $rating = $comment['rating'] ?? null;
+                    $text = $comment['text'] ?? null;
+                    return $imdbId !== null &&
+                        $rating !== null &&
+                        $text !== null;
+                }
+            );
 
-            try {
-                foreach ($comments as $comment) {
-                    $newReviewDto = new ReviewDto(
-                        text: $comment['text'] ?? null,
-                        rating: $comment['rating'] ?? null,
-                        filmId: $filmId,
-                    );
-                    if (
-                        $newReviewDto->text !== null &&
-                        $newReviewDto->rating !== null
-                    ) {
+            if (!empty($commentsWithAllRequiredData)) {
+                DB::beginTransaction();
+
+                try {
+                    foreach ($commentsWithAllRequiredData as $comment) {
+                        $newReviewDto = new ReviewDto(
+                            text: $comment['text'],
+                            rating: $comment['rating'],
+                            filmId: $filmId,
+                        );
+
                         (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
                     }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    throw $e;
                 }
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
             }
+
         }
     }
 

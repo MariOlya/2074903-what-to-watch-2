@@ -45,29 +45,51 @@ class ParseNewCommentsJob implements ShouldQueue
         $comments = (array)$response['data'];
 
         if (!empty($comments)) {
-            DB::beginTransaction();
-            try {
-                foreach ($comments as $comment) {
-                    $film = Film::whereImdbId($comment['imdb_id'])->first();
-                    if ($film) {
-                        $newReviewDto = new ReviewDto(
-                            text: $comment['text'] ?? null,
-                            rating: $comment['rating'] ?? null,
-                            filmId: $film->id,
-                        );
-                        if (
-                            $newReviewDto->text !== null &&
-                            $newReviewDto->rating !== null
-                    ) {
-                            (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
-                        }
-                    }
+            $commentsWithAllRequiredData = array_filter(
+                $comments,
+                static function ($comment) {
+                    $imdbId = $comment['imdb_id'] ?? null;
+                    $rating = $comment['rating'] ?? null;
+                    $text = $comment['text'] ?? null;
+                    return $imdbId !== null &&
+                        $rating !== null &&
+                        $text !== null;
                 }
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
+            );
+
+            if (!empty($commentsWithAllRequiredData)) {
+                $imdbIds = array_map(
+                    static fn ($comment) => $comment['imdb_id'],
+                    $commentsWithAllRequiredData
+                );
+
+                $films = Film::query()->whereIn('imdb_id', $imdbIds)->get();
+
+                $commentsForExistedFilms = array_filter(
+                    $commentsWithAllRequiredData,
+                    static fn ($comment) => $films->contains('imdb_id', '=', $comment['imdb_id'])
+                );
+
+                DB::beginTransaction();
+                try {
+                    foreach ($commentsForExistedFilms as $comment) {
+                        $filmId = $films->where('imdb_id', '=', $comment['imdb_id'])->value('id');
+                        $newReviewDto = new ReviewDto(
+                            text: $comment['text'],
+                            rating: $comment['rating'],
+                            filmId: $filmId,
+                        );
+                        (new ReviewFactory(new Review()))->createNewReview($newReviewDto);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    throw $e;
+                }
             }
+
+
+
         }
     }
 
