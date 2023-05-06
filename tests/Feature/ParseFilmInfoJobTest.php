@@ -123,4 +123,75 @@ class ParseFilmInfoJobTest extends TestCase
         $this->assertEquals($omdbResponse['data']['Title'], $updatedFilm->name);
         $this->assertEquals($htmlAcademyResponse['data']['video'], $updatedFilm->videoLink->link);
     }
+
+    /**
+     * @throws \JsonException|\PHPUnit\Framework\MockObject\Exception
+     */
+    public function testAddParsedInfoWithNAAnswerFromExternalApi(): void
+    {
+        $linkFactory = App::makeWith(LinkFactoryInterface::class, ['link' => new Link()]);
+        $filmImageFactory = App::makeWith(FilmFileFactoryInterface::class, [
+            'file' => new File(),
+            'service' => new FileService()
+        ]);
+
+        $imdb = 'tt1385384';
+
+        Film::factory()->create([
+            'status_id' => FilmStatus::whereStatus(Film::NEW_FILM_STATUS)->value('id'),
+            'imdb_id' => $imdb
+        ]);
+
+        $newFilm = Film::whereImdbId($imdb)->first();
+
+        $omdbRepository = $this->createMock(OmdbFilmApiRepository::class);
+        $omdbRepository
+            ->expects($this->exactly(2))
+            ->method('getMovieInfoById')->with($imdb)
+            ->willReturn(
+                json_decode(
+                    file_get_contents(base_path('tests/Fixtures/omdb-response-fake-with-na-answer.json')),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        $htmlAcademyRepository = $this->createMock(HtmlAcademyFilmApiRepository::class);
+        $htmlAcademyRepository
+            ->expects($this->exactly(2))
+            ->method('getMovieInfoById')->with($imdb)
+            ->willReturn(
+                json_decode(
+                    file_get_contents(base_path('tests/Fixtures/html-academy-response-fake-with-500.json')),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        $filmRepository = App::makeWith(FilmRepositoryInterface::class, [
+            'imageFactory' => $filmImageFactory,
+            'linkFactory' => $linkFactory
+        ]);
+
+        (new ParseFilmInfoJob($imdb))->handle($omdbRepository, $htmlAcademyRepository, $filmRepository);
+
+        $updatedFilm = Film::whereImdbId($imdb)->first();
+
+        $omdbResponse = $omdbRepository->getMovieInfoById($imdb);
+        $htmlAcademyResponse = $htmlAcademyRepository->getMovieInfoById($imdb);
+
+        $this->assertIsArray($omdbResponse);
+        $this->assertIsArray($htmlAcademyResponse);
+        $this->assertNull($newFilm->poster_image_id);
+        $this->assertEquals(1, $updatedFilm->poster_image_id);
+        $this->assertEquals($newFilm->rating, $updatedFilm->rating);
+        $this->assertEquals($newFilm->run_time, $updatedFilm->run_time);
+        $this->assertEquals($newFilm->vote_amount, $updatedFilm->vote_amount);
+        $this->assertEquals($newFilm->description, $updatedFilm->description);
+
+        $this->assertNotEquals($newFilm->name, $updatedFilm->name);
+        $this->assertEquals($omdbResponse['data']['Title'], $updatedFilm->name);
+    }
 }

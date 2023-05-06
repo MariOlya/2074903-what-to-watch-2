@@ -259,13 +259,27 @@ class FilmRepository implements FilmRepositoryInterface
     public function findById(int $id, array $columns = ['*']): Model
     {
         return Film::with([
-            'posterImage',
-            'previewImage',
-            'backgroundImage',
-            'backgroundColor',
-            'videoLink',
-            'previewVideoLink',
-            'director',
+            'posterImage' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:file"]);
+            },
+            'previewImage' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:file"]);
+            },
+            'backgroundImage' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:file"]);
+            },
+            'backgroundColor' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:color"]);
+            },
+            'videoLink' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:link"]);
+            },
+            'previewVideoLink' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:link"]);
+            },
+            'director' => function ($query) use ($id) {
+                return $query->cacheTags(["film:{$id}:director"]);
+            },
             'actors',
             'genres'
         ])->where('id', '=', $id)->firstOrFail($columns);
@@ -586,5 +600,20 @@ class FilmRepository implements FilmRepositoryInterface
             DB::rollback();
             throw $e;
         }
+    }
+
+    public function findPromo(array $columns = ['*']): ?Model
+    {
+        return Film::with([
+            'posterImage',
+            'previewImage',
+            'backgroundImage',
+            'backgroundColor',
+            'videoLink',
+            'previewVideoLink',
+            'director',
+            'actors',
+            'genres'
+        ])->where('promo', '=', 1)->first($columns);
     }
 }

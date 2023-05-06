@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Rennokki\QueryCache\Traits\QueryCacheable;
 
 /**
  * App\Models\Director
@@ -23,11 +24,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Director extends Model
 {
-    use HasFactory;
+    use HasFactory, QueryCacheable;
+
+    public $cacheFor = 24*60*60;
+    public $cacheTags = ['director'];
 
     public $timestamps = false;
 
     public $fillable = ['name'];
+
+    protected function cacheForValue()
+    {
+        if (request()?->user()?->userRole->role === User::ADMIN_ROLE) {
+            return null;
+        }
+
+        return $this->cacheFor;
+    }
 
     public function films(): HasMany
     {

@@ -9,6 +9,7 @@ use App\Factories\Interfaces\ReviewFactoryInterface;
 use App\Http\Requests\ReviewRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
+use App\Jobs\ParseNewCommentsJob;
 use App\Models\Review;
 use App\Models\User;
 use App\Repositories\Interfaces\FilmRepositoryInterface;
@@ -45,9 +46,9 @@ class ReviewController extends Controller
         $reviewDto = new ReviewDto(
             text: $params['text'] ?? null,
             rating: $params['rating'] ?? null,
+            filmId: $filmId,
             reviewId: $params['comment_id'] ?? null,
-            userId: $user->id,
-            filmId: $filmId
+            userId: $user->id
         );
 
         $newVote = $reviewDto->rating;
@@ -87,7 +88,8 @@ class ReviewController extends Controller
         $reviewDto = new ReviewDto(
             text: $params['text'] ?? null,
             rating: $params['rating'] ?? null,
-            reviewId: $params['comment_id'] ?? null,
+            filmId: null,
+            reviewId: $params['comment_id'] ?? null
         );
 
         $reviewId = $review->id;
@@ -149,5 +151,15 @@ class ReviewController extends Controller
         return new SuccessResponse(
             data: ['This review was deleted successfully']
         );
+    }
+
+    /**
+     * POLICY: Technical job only for backend without route
+     *
+     * @return void
+     */
+    public function parseCommentsExternalApi(): void
+    {
+        ParseNewCommentsJob::dispatch();
     }
 }

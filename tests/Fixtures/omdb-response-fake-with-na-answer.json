@@ -1,0 +1,30 @@
+{
+    "code":200,
+    "message":"OK",
+    "data":{
+        "Title":"Yngwie Malmsteen",
+        "Year":"2008",
+        "Rated":"N/A",
+        "Released":"22 Nov 2008",
+        "Season": "1",
+        "Episode": "2",
+        "Runtime":"N/A",
+        "Genre":"Music, Talk-Show",
+        "Director":"Dave Diomedi",
+        "Writer":"N/A",
+        "Actors":"Eddie Trunk, Don Jamieson, Jim Florentine",
+        "Plot":"N/A",
+        "Language":"English",
+        "Country":"United States",
+        "Awards":"N/A",
+        "Poster":"https://m.media-amazon.com/images/M/MV5BMTY4OTAyMDM1OF5BMl5BanBnXkFtZTgwOTgxMjI3NDE@._V1_SX300.jpg",
+        "Ratings":[],
+        "Metascore":"N/A",
+        "imdbRating":"N/A",
+        "imdbVotes":"N/A",
+        "imdbID":"tt1385384",
+        "seriesID": "tt1382157",
+        "Type":"episode",
+        "Response":"True"
+    }
+}

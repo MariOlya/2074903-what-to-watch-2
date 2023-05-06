@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Rennokki\QueryCache\Traits\QueryCacheable;
 
 /**
  * App\Models\File
@@ -27,9 +28,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class File extends Model
 {
-    use HasFactory;
+    use HasFactory, QueryCacheable;
+
+    public $cacheFor = 24*60*60;
+    public $cacheTags = ['file'];
 
     public $timestamps = false;
+
+    protected function cacheForValue()
+    {
+        if (request()?->user()?->userRole->role === User::ADMIN_ROLE) {
+            return null;
+        }
+
+        return $this->cacheFor;
+    }
 
     public function type(): BelongsTo
     {

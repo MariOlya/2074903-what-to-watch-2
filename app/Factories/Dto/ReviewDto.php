@@ -16,10 +16,9 @@ class ReviewDto extends Dto
     public function __construct(
         readonly ?string $text,
         readonly ?int $rating,
-        readonly ?int $reviewId,
+        readonly ?int $filmId,
+        readonly ?int $reviewId = null,
         readonly ?int $userId = null,
-        readonly ?int $filmId = null
-
     )
     {
     }

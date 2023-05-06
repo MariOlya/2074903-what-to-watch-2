@@ -80,7 +80,7 @@ We work here with PHPUnit. To start tests just run:
 ```
 sail artisan test
 ```
-For concrete functional test:
+For concrete test:
 ```
 sail artisan test --filter=<name>  
 ```

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Rennokki\QueryCache\Traits\QueryCacheable;
 
 /**
  * App\Models\Link
@@ -29,11 +30,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Link extends Model
 {
-    use HasFactory;
+    use HasFactory, QueryCacheable;
+
+    public $cacheFor = 24*60*60;
+    public $cacheTags = ['link'];
 
     public $timestamps = false;
 
     public $fillable = ['link', 'link_type_id'];
+
+    protected function cacheForValue()
+    {
+        if (request()?->user()?->userRole->role === User::ADMIN_ROLE) {
+            return null;
+        }
+
+        return $this->cacheFor;
+    }
 
     public function type(): BelongsTo
     {

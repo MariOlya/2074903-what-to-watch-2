@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Factories\Dto\UserDto;
+use App\Factories\Interfaces\AvatarFactoryInterface;
 use App\Factories\Interfaces\UserFactoryInterface;
 use App\Http\Requests\UserRequest;
 use App\Http\Responses\BaseResponse;
 use App\Http\Responses\SuccessResponse;
-use App\Http\Responses\UnauthorizedResponse;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Services\FileService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
     public function __construct(
         readonly UserFactoryInterface $userFactory,
-        readonly UserRepositoryInterface $userRepository
+        readonly UserRepositoryInterface $userRepository,
+        readonly AvatarFactoryInterface $avatarFactory,
+        readonly FileService $fileService
     )
     {
     }
@@ -29,30 +33,49 @@ class UserController extends Controller
      *
      * @param UserRequest $request
      * @return BaseResponse
+     * @throws \Exception
      */
     public function register(UserRequest $request): BaseResponse
     {
         $params = $request->safe()->except('file');
-        $userDto = new UserDto(
-            name: $params['name'] ?? null,
-            email: $params['email'] ?? null,
-            password: $params['password'] ?? null
-        );
+        $file = $request->safe()->only('file');
 
-        // add the rule here to save File and add file id to User
-        // $fileParams = $request->safe()->only('file');
+        DB::beginTransaction();
+        try {
+            if ($file) {
+                $name = $file['file']->hashName();
+                $newAvatar = $this->avatarFactory->createNewAvatar($name);
+                $avatarFileName = substr($newAvatar->link, 8);
+                $avatarId = $newAvatar->id;
+            }
 
-        $newUser = $this->userFactory->createNewUser($userDto);
+            $userDto = new UserDto(
+                name: $params['name'] ?? null,
+                email: $params['email'] ?? null,
+                password: $params['password'] ?? null,
+                fileId: $avatarId ?? null
+            );
 
-        $token = $newUser->createToken('auth-token');
+            $newUser = $this->userFactory->createNewUser($userDto);
 
-        return new SuccessResponse(
-            codeResponse: Response::HTTP_CREATED,
-            data: [
-                'user' => $newUser,
-                'token' => $token->plainTextToken,
-            ]
-        );
+            DB::commit();
+
+            $request->file('file')?->storeAs(FileService::PUBLIC_STORAGE.'/avatars', $avatarFileName);
+
+            $token = $newUser->createToken('auth-token');
+
+            return new SuccessResponse(
+                codeResponse: Response::HTTP_CREATED,
+                data: [
+                    'user' => $newUser,
+                    'avatar' => $newAvatar->link ?? null,
+                    'token' => $token->plainTextToken,
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
     /**
@@ -70,7 +93,6 @@ class UserController extends Controller
         return new SuccessResponse(
             data: [
                 'user' => $user,
-                'avatar' => $avatar
             ]
         );
     }
@@ -80,6 +102,7 @@ class UserController extends Controller
      *
      * @param UserRequest $request
      * @return BaseResponse
+     * @throws \Exception
      */
     public function updateUser(UserRequest $request): BaseResponse
     {
@@ -88,22 +111,45 @@ class UserController extends Controller
 
         $userId = $user->id;
         $params = $request->safe()->except('file');
-        $userDto = new UserDto(
-            name: $params['name'] ?? null,
-            email: $params['email'] ?? null,
-            password: $params['password'] ?? null,
-        );
+        $file = $request->safe()->only('file');
 
-        // add the rule here to save File and add file id to User
-        // $fileParams = $request->safe()->only('file');
+        DB::beginTransaction();
+        try {
+            if ($file) {
+                $name = $file['file']->hashName();
+                $newAvatar = $this->avatarFactory->createNewAvatar($name);
+                $avatarFileName = substr($newAvatar->link, 8);
+                $avatarId = $newAvatar->id;
 
-        $updatedUser = $this->userRepository->update($userId, $userDto);
+                $previousAvatarPath = $user->avatar->link;
+                $user->avatar()->delete();
+            }
 
-        return new SuccessResponse(
-            data: [
-                'updatedUser' => $updatedUser,
-//                'newAvatar' => $newAvatar ?? null
-            ]
-        );
+            $userDto = new UserDto(
+                name: $params['name'] ?? null,
+                email: $params['email'] ?? null,
+                password: $params['password'] ?? null,
+                fileId: $avatarId ?? null
+            );
+
+            $updatedUser = $this->userRepository->update($userId, $userDto);
+
+            DB::commit();
+
+            $request->file('file')?->storeAs(FileService::PUBLIC_STORAGE.'/avatars', $avatarFileName);
+            if (isset($previousAvatarPath)) {
+                $this->fileService::deleteFileFromStorage(substr($previousAvatarPath, 8), FileService::FOLDER_AVATARS);
+            }
+
+            return new SuccessResponse(
+                data: [
+                    'updatedUser' => $updatedUser,
+                    'newAvatar' => $newAvatar->link ?? null
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 }

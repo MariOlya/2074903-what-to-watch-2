@@ -29,7 +29,6 @@ class ParseFilmInfoJob implements ShouldQueue
      */
     public function __construct(
         readonly string $imdbId,
-
     ) {
     }
 
@@ -52,18 +51,30 @@ class ParseFilmInfoJob implements ShouldQueue
         }
 
         $filmInfo = (array)$omdbResponse['data'];
+        $emptyRowData = 'N/A';
+
+        $title = $filmInfo['Title'] ?? null;
+        $released = $filmInfo['Released'] ?? null;
+        $runTime = $filmInfo['Runtime'] ?? null;
+        $genres = $filmInfo['Genre'] ?? null;
+        $director = $filmInfo['Director'] ?? null;
+        $actors = $filmInfo['Actors'] ?? null;
+        $description = $filmInfo['Plot'] ?? null;
+        $posterImage = $filmInfo['Poster'] ?? null;
+        $rating = $filmInfo['imdbRating'] ?? null;
+        $votes = $filmInfo['imdbVotes'] ?? null;
 
         $omdbFilmApiDto = new OmdbFilmApiDto(
-            title: $filmInfo['Title'] ?? null,
-            released: $filmInfo['Released'] ?? null,
-            runTime: $filmInfo['Runtime'] ?? null,
-            genres: $filmInfo['Genre'] ?? null,
-            director: $filmInfo['Director'] ?? null,
-            actors: $filmInfo['Actors'] ?? null,
-            description: $filmInfo['Plot'] ?? null,
-            posterImage: $filmInfo['Poster'] ?? null,
-            rating: $filmInfo['imdbRating'] ?? null,
-            amountVotes: $filmInfo['imdbVotes'] ?? null
+            title: $title === $emptyRowData ? null : $title,
+            released: $released === $emptyRowData ? null : $released,
+            runTime: $runTime === $emptyRowData ? null : $runTime,
+            genres: $genres === $emptyRowData ? null : $genres,
+            director: $director === $emptyRowData ? null : $director,
+            actors: $actors === $emptyRowData ? null : $actors,
+            description: $description === $emptyRowData ? null : $description,
+            posterImage: $posterImage === $emptyRowData ? null : $posterImage,
+            rating: $rating === $emptyRowData ? null : $rating,
+            amountVotes: $votes === $emptyRowData ? null : $votes
         );
 
         $filmRepository->fillFilmInfo($this->imdbId, $omdbFilmApiDto);
